@@ -1,0 +1,167 @@
+<html lang="zh">
+<head>
+<title>海量文件自动分类工具</title>
+
+<HTA:APPLICATION 
+	ID="objHTA_Create_Folder_By_Date"
+	APPLICATIONNAME="HTA_Folder_Date"
+	SCROLL="no"
+	BORDER = "dialog"
+	BORDERSTYLE = "normal"
+	SINGLEINSTANCE="yes"
+	WINDOWSTATE="normal"
+	CAPTION="normal"
+>
+</head>
+<SCRIPT Language="VBScript">
+If True Then
+	Const ForReading = 1, ForWriting = 2, ForAppending = 8
+	Set objFSO = CreateObject("Scripting.FileSystemObject")
+	Set objRegEx = CreateObject("VBScript.RegExp")
+
+	Set oShell = CreateObject ("WScript.Shell")
+End If
+FolderStyle = 3
+
+Sub ExitHTA
+    self.close()
+End Sub
+
+Sub Window_onLoad
+    ' resize to quarter of screen area, centered
+    window.resizeTo 450,400
+    window.moveTo screen.availWidth/4,screen.availHeight/4
+End Sub 
+
+'Indicates which radio button was selected
+
+Function setFolderStyle()
+	For Each button in FolderOption
+		If button.Checked Then 
+			value = button.value
+			exit For
+		end If
+	Next
+	FolderStyle = value
+End Function
+
+Sub RunIt()
+	BaseFolder = Document.all("folderpath").value
+	Set objFolder = objFSO.GetFolder(BaseFolder)
+	Set colFiles = objFolder.Files
+	For Each objFile in colFiles
+		DLM=objFile.DateLastModified
+		subFolderBase = BaseFolder & "\" & year(DLM) & "-" & Right("00" & month(DLM),2)
+		Select Case FolderStyle
+			Case 1
+				SubFolder = subFolderBase
+			Case 2
+				SubFolder = subFolderBase & "-week" & Right("00" & WeekdayOfMonth(DLM),2)
+			Case Else
+				SubFolder = subFolderBase & "-" & Right("00" & day(DLM),2)
+		End Select
+		If Not objFSO.FolderExists(SubFolder) Then
+			objFSO.CreateFolder SubFolder
+		End If
+		objFSO.MoveFile objFile.Path, SubFolder & "\" & objFile.Name
+	Next
+	MsgBox "已经处理完成"
+End Sub
+
+Sub SelectFolder()
+	BaseFolder = "MY COMPUTER"
+	BaseFolder=BrowseFolder(BaseFolder,true)
+	Document.all("folderpath").value=BaseFolder
+End Sub
+
+Function WeekdayOfMonth(dtmTargetDate)
+	dtmDay = DatePart("d", dtmTargetDate)
+	dtmMonth = DatePart("m", dtmTargetDate)
+	dtmYear = DatePart("yyyy", dtmTargetDate)
+
+	dtmStartDate = dtmMonth & "/1/" & dtmYear
+	dtmStartDate = CDate(dtmStartDate)
+
+	intWeekday = Weekday(dtmStartDate)
+	intAddon = 8 - intWeekday
+
+	intWeek1 = intAddOn
+	intWeek2 = intWeek1 + 7
+	intWeek3 = intWeek2 + 7
+	intWeek4 = intWeek3 + 7
+	intWeek5 = intWeek4 + 7
+	intWeek6 = intWeek5 + 7
+
+	If dtmDay > intWeek5 And dtmDay <= intWeek6 Then
+		strWeek = 6
+	ElseIf dtmDay > intWeek4 And dtmDay <= intWeek5 Then
+		strWeek = 5
+	ElseIf dtmDay > intWeek3 And dtmDay <= intWeek4 Then
+		strWeek = 4
+	ElseIf dtmDay > intWeek2 And dtmDay <= intWeek3 Then
+		strWeek = 3
+	ElseIf dtmDay > intWeek1 And dtmDay <= intWeek2 Then
+		strWeek = 2
+	ElseIf dtmDay <= intWeek1 Then
+		strWeek = 1
+	End If
+
+	WeekdayOfMonth = strWeek
+End Function
+
+Function BrowseFolder( myStartLocation, blnSimpleDialog )
+'打开“浏览文件夹对话框”
+	Const MY_COMPUTER   = &H11&
+	Const WINDOW_HANDLE = 0 '此处必须为0
+	
+	Dim numOptions, objFolder, objFolderItem
+	Dim objPath, objShell, strPath, strPrompt
+	
+	'为对话框设置参数
+	strPrompt = "Select a folder:"
+	If blnSimpleDialog = True Then
+		numOptions = 0      '简单对话框
+	Else
+		numOptions = &H10&  '添加一个输入文件夹路径的输入框
+	End If
+	
+	Set objShell = CreateObject( "Shell.Application" )
+	
+	If UCase( myStartLocation ) = "MY COMPUTER" Then
+		Set objFolder = objShell.Namespace( MY_COMPUTER )
+		Set objFolderItem = objFolder.Self
+		strPath = objFolderItem.Path
+	Else
+		strPath = myStartLocation
+	End If
+	
+	Set objFolder = objShell.BrowseForFolder( WINDOW_HANDLE, strPrompt, numOptions, strPath )
+	If objFolder Is Nothing Then
+		BrowseFolder = ""
+		Exit Function
+	End If
+	
+	Set objFolderItem = objFolder.Self
+	objPath = objFolderItem.Path
+	BrowseFolder = objPath
+End Function
+
+</SCRIPT>
+
+<body STYLE="background-color:silver;">
+<input type="radio" name="FolderOption" id="month" value="1" onclick="setFolderStyle()"><label for="month">按照月份分类文件</label><BR>
+<input type="radio" name="FolderOption" id="week" value="2" onclick="setFolderStyle()"><label for="week">按照星期分类文件</label><BR>
+<input type="radio" name="FolderOption" id="day" value="3" onclick="setFolderStyle()" checked><label for="day">按照日期分类文件</label><BR>
+<hr>
+<input type="text" name="folderpath" size="40" value="D:\" disabled>
+<input type="button" value="目标文件夹" onclick="SelectFolder()">
+<hr>
+<div align="right">
+<input type="button" accesskey="S" value="开始分类(S)" onclick="RunIt()">&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="button" accesskey="X" value="退出(X)" name="exit_button"  onClick="ExitHTA">&nbsp;&nbsp;
+</div>
+<hr>
+<p>此软件如何如何强大快捷能干，巴拉巴拉……</p>
+</body>
+
+</html>
