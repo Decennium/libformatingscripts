@@ -31,20 +31,25 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 '动态显示盘符
 Sub Window_Onload()
+	RefreshRemovableDisk
+End Sub
+
+Sub RefreshRemovableDisk()
 	Dim d, dc
 	Set dc = objFSO.Drives
 	For Each d in dc
-		'If d.drivetype =1 then
-		Set objOption = Document.createElement("OPTION")
-		objOption.Text = d.DriveLetter & ":\"
-		objOption.Value = d.DriveLetter & ":\"
-		DriveList.Add(objOption)
-		objOption.Selected = "selected"
-		Run_Button.disabled = False
-		DriveList.style.visibility="visible"
-		'End If
+		If d.drivetype =1 then
+			Set objOption = Document.createElement("OPTION")
+			objOption.Text = d.DriveLetter & ":\"
+			objOption.Value = d.DriveLetter & ":\"
+			DriveList.Add(objOption)
+			objOption.Selected = "selected"
+			Run_Button.disabled = False
+			DriveList.style.visibility = "visible"
+			appBody.style.display = "block"
+			appInfo.style.display = "none"
+		End If
 	Next
-	'Run_Button.style.visibility = "hidden"
 End Sub
 
 Sub RunScript()
@@ -99,6 +104,7 @@ End Sub
 
 </SCRIPT>
 <body STYLE="background-color:buttonface;">
+<div name="appBody" id="appBody" style="display:none;">
 此软件执行以下几件事情：
 <hr />
 (1/4)请选择需要清理的可移动磁盘：
@@ -110,6 +116,11 @@ End Sub
 (3/4)删除与文件夹同名的程序文件
 <br /><br />
 (4/4)<input type="checkbox" name="CB_DELAUTO" id="CB_DELAUTO" value="1" checked><label for="CB_DELAUTO">删除"autorun.inf"文件</label><br />
+</div>
+<div name="appInfo" id="appInfo" style="display:block;">
+你没有插入可移动磁盘，请插入后按刷新键。<br />
+<button name="Refresh_Button" onClick="RefreshRemovableDisk" accesskey="R">刷新(<u>R</u>)</button>&nbsp;&nbsp;
+</div>
 <hr />
 <p align="center">
 <button name="Run_Button" onClick="RunScript" accesskey="S" disabled>开始(<u>S</u>)</button>&nbsp;&nbsp;
