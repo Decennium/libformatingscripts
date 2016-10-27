@@ -1,5 +1,7 @@
-<html lang="zh">
+<html>
 <head>
+<meta charset="gbk">
+<meta http-equiv="content-type" content="text/html;charset=gbk">
 <title>海量文件自动分类工具</title>
 
 <HTA:APPLICATION 
@@ -11,16 +13,17 @@
 	SINGLEINSTANCE="yes"
 	WINDOWSTATE="normal"
 	CAPTION="normal"
+	ICON=""
+	ContextMenu="no"
+	innerBorder="no"
 >
 </head>
 <SCRIPT Language="VBScript">
-If True Then
-	Const ForReading = 1, ForWriting = 2, ForAppending = 8
-	Set objFSO = CreateObject("Scripting.FileSystemObject")
-	Set objRegEx = CreateObject("VBScript.RegExp")
+Const ForReading = 1, ForWriting = 2, ForAppending = 8
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set objRegEx = CreateObject("VBScript.RegExp")
 
-	Set oShell = CreateObject ("WScript.Shell")
-End If
+Set oShell = CreateObject ("WScript.Shell")
 FolderStyle = 3
 
 Sub ExitHTA
@@ -70,8 +73,14 @@ End Sub
 
 Sub SelectFolder()
 	BaseFolder = "MY COMPUTER"
-	BaseFolder=BrowseFolder(BaseFolder,true)
-	Document.all("folderpath").value=BaseFolder
+	BaseFolder = BrowseFolder(BaseFolder,true)
+	Document.all("folderpath").value = BaseFolder
+	
+	If instr(BaseFolder,"\") > 0 Then
+		run_button.disabled = false
+	Else
+		run_button.disabled = true
+	End If
 End Sub
 
 Function WeekdayOfMonth(dtmTargetDate)
@@ -148,20 +157,22 @@ End Function
 
 </SCRIPT>
 
-<body STYLE="background-color:silver;">
-<input type="radio" name="FolderOption" id="month" value="1" onclick="setFolderStyle()"><label for="month">按照月份分类文件</label><BR>
-<input type="radio" name="FolderOption" id="week" value="2" onclick="setFolderStyle()"><label for="week">按照星期分类文件</label><BR>
-<input type="radio" name="FolderOption" id="day" value="3" onclick="setFolderStyle()" checked><label for="day">按照日期分类文件</label><BR>
+<body STYLE="background-color:Gainsboro;">
+<input type="radio" name="FolderOption" id="month" value="1" onclick="setFolderStyle()">
+<label for="month" accesskey="M">按照月份分类文件(M)</label><BR>
+<input type="radio" name="FolderOption" id="week" value="2" onclick="setFolderStyle()">
+<label for="week" accesskey="W">按照星期分类文件(W)</label><BR>
+<input type="radio" name="FolderOption" id="day" value="3" onclick="setFolderStyle()" checked>
+<label for="day" accesskey="D">按照日期分类文件(D)</label><BR>
 <hr>
-<input type="text" name="folderpath" size="40" value="D:\" disabled>
-<input type="button" value="目标文件夹" onclick="SelectFolder()">
+<input type="text" name="folderpath" id="folderpath" size="40" value="" readonly>
+<input type="button" accesskey="F" value="目标文件夹(F)" onclick="SelectFolder()">
 <hr>
 <div align="right">
-<input type="button" accesskey="S" value="开始分类(S)" onclick="RunIt()">&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="button" accesskey="S" value="开始分类(S)" name="run_button" onclick="RunIt()" disabled>&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="button" accesskey="X" value="退出(X)" name="exit_button"  onClick="ExitHTA">&nbsp;&nbsp;
 </div>
 <hr>
 <p>此软件如何如何强大快捷能干，巴拉巴拉……</p>
 </body>
-
 </html>
