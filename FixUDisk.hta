@@ -1,0 +1,119 @@
+<html>
+<head>
+<meta charset="gbk">
+<meta http-equiv="content-type" content="text/html;charset=gbk">
+<title>中毒优盘修复工具</title>
+<style type="text/css">
+body {cursor:default;}
+</style>
+<HTA:APPLICATION
+	ID="U-disk Repair Tool"
+	APPLICATIONNAME="U-disk Repair Tool"
+	SCROLL="no"
+	ContextMenu="no"
+	SINGLEINSTANCE="yes"
+	WINDOWSTATE="normal"
+	innerBorder="no"
+	MaximizeButton="no"
+	MinimizeButton="no"
+	SCROLL="no"
+	NAVIGABLE="yes"
+	BORDER="thin"
+	ICON="%SystemRoot%/system32/cleanmgr.exe"
+>
+</head>
+<SCRIPT Language="VBScript">
+' resize to quarter of screen area, centered
+window.resizeTo 400,300
+window.moveTo screen.availWidth/4,screen.availHeight/4
+
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+'动态显示盘符
+Sub Window_Onload()
+	Dim d, dc
+	Set dc = objFSO.Drives
+	For Each d in dc
+		'If d.drivetype =1 then
+		Set objOption = Document.createElement("OPTION")
+		objOption.Text = d.DriveLetter & ":\"
+		objOption.Value = d.DriveLetter & ":\"
+		DriveList.Add(objOption)
+		objOption.Selected = "selected"
+		Run_Button.disabled = False
+		DriveList.style.visibility="visible"
+		'End If
+	Next
+	'Run_Button.style.visibility = "hidden"
+End Sub
+
+Sub RunScript()
+	ResetFolderAttributes DriveList.Value
+	DeleteBadEXE DriveList.Value
+	If CB_DELAUTO.Checked Then DeleteAutoRun(DriveList.Value)
+	
+	If vbOK=MsgBox ("操作成功！现在查看效果？",vbOKCancel+vbInformation,Window.caption) Then
+		expldrv="Explorer.exe /e," & DriveList.Value
+		set ws=CreateObject("WScript.Shell")
+		ws.run expldrv
+	End If
+End Sub
+'删除autorun.inf
+Sub DeleteAutoRun(BaseFolder)
+	If (objFSO.FileExists(BaseFolder & "autorun.inf")) Then
+		Set MyFile = objFSO.GetFile(BaseFolder & "autorun.inf")
+		MyFile.Delete(true)
+	End If
+End Sub
+'重置全部文件夹的属性，恢复正常
+Sub ResetFolderAttributes(BaseFolder)
+	Set objFolder = objFSO.GetFolder(BaseFolder)
+	Set colSubFolders = objFolder.SubFolders
+	For Each objSubFolder in colSubFolders
+		Select Case objSubFolder.Name
+			Case "System Volume Information","$RECYCLE.BIN",".cache",".kuaipan"
+			Case Else
+				objSubFolder.Attributes = 0
+		End Select
+	Next
+End Sub
+'恶意程序文件名与文件夹相同
+'找到后删除即可
+Sub DeleteBadEXE(BaseFolder)
+	Set objFolder = objFSO.GetFolder(BaseFolder)
+	Set colFiles = objFolder.Files
+	
+	For Each oFile In colFiles
+		FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
+		If objFSO.FolderExists(BaseFolder & FileNameBody) Then
+			'删除当前文件
+			'WScript.Echo FileNameBody
+			oFile.Delete
+		End If
+	Next
+End Sub
+
+Sub ExitHTA
+    self.close()
+End Sub
+
+</SCRIPT>
+<body STYLE="background-color:buttonface;">
+此软件执行以下几件事情：
+<hr />
+(1/4)请选择需要清理的可移动磁盘：
+<select size="1" name="DriveList" style="visibility:hidden;">
+</select>
+<br /><br />
+(2/4)重置全部文件夹的属性，恢复正常
+<br /><br />
+(3/4)删除与文件夹同名的程序文件
+<br /><br />
+(4/4)<input type="checkbox" name="CB_DELAUTO" id="CB_DELAUTO" value="1" checked><label for="CB_DELAUTO">删除"autorun.inf"文件</label><br />
+<hr />
+<p align="center">
+<button name="Run_Button" onClick="RunScript" accesskey="S" disabled>开始(<u>S</u>)</button>&nbsp;&nbsp;
+<button onClick="self.close()" accesskey="X">退出(<u>X</u>)</button>
+</p>
+</body>
+</html>

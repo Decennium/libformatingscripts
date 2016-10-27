@@ -3,19 +3,23 @@
 <meta charset="gbk">
 <meta http-equiv="content-type" content="text/html;charset=gbk">
 <title>海量文件自动分类工具</title>
-
+<style type="text/css">
+body {cursor:default;}
+</style>
 <HTA:APPLICATION 
 	ID="objHTA_Create_Folder_By_Date"
 	APPLICATIONNAME="HTA_Folder_Date"
 	SCROLL="no"
 	BORDER = "dialog"
 	BORDERSTYLE = "normal"
+	innerBorder="no"
 	SINGLEINSTANCE="yes"
+	MaximizeButton="no"
+	MinimizeButton="no"
 	WINDOWSTATE="normal"
 	CAPTION="normal"
 	ICON=""
 	ContextMenu="no"
-	innerBorder="no"
 >
 </head>
 <SCRIPT Language="VBScript">
@@ -157,20 +161,20 @@ End Function
 
 </SCRIPT>
 
-<body STYLE="background-color:Gainsboro;">
+<body STYLE="background-color:buttonface;">
 <input type="radio" name="FolderOption" id="month" value="1" onclick="setFolderStyle()">
-<label for="month" accesskey="M">按照月份分类文件(M)</label><BR>
+<label for="month" accesskey="M">按照月份分类文件(<u>M</u>)</label><BR>
 <input type="radio" name="FolderOption" id="week" value="2" onclick="setFolderStyle()">
-<label for="week" accesskey="W">按照星期分类文件(W)</label><BR>
+<label for="week" accesskey="W">按照星期分类文件(<u>W</u>)</label><BR>
 <input type="radio" name="FolderOption" id="day" value="3" onclick="setFolderStyle()" checked>
-<label for="day" accesskey="D">按照日期分类文件(D)</label><BR>
+<label for="day" accesskey="D">按照日期分类文件(<u>D</u>)</label><BR>
 <hr>
-<input type="text" name="folderpath" id="folderpath" size="40" value="" readonly>
-<input type="button" accesskey="F" value="目标文件夹(F)" onclick="SelectFolder()">
+<input type="text" name="folderpath" id="folderpath" size="40" value="" disabled>
+<button accesskey="F" onclick="SelectFolder()">目标文件夹(<u>F</u>)</button>
 <hr>
 <div align="right">
-<input type="button" accesskey="S" value="开始分类(S)" name="run_button" onclick="RunIt()" disabled>&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="button" accesskey="X" value="退出(X)" name="exit_button"  onClick="ExitHTA">&nbsp;&nbsp;
+<button accesskey="S" name="run_button" onclick="RunIt()" disabled>开始分类(<u>S</u>)</button>&nbsp;&nbsp;&nbsp;&nbsp;
+<button accesskey="X" name="exit_button"  onClick="ExitHTA">退出(<u>X</u>)</button>&nbsp;&nbsp;
 </div>
 <hr>
 <p>此软件如何如何强大快捷能干，巴拉巴拉……</p>

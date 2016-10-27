@@ -8,8 +8,18 @@ End If
 
 Do
 	BaseFolder = "MY COMPUTER"
-	BaseFolder=BrowseFolder(BaseFolder,true)
-	If BaseFolder="" then exit do
+	BaseFolder = BrowseFolder(BaseFolder,true)
+	If BaseFolder = "" then exit do
+
+	ResetFolderAttributes BaseFolder
+	DeleteBadEXE BaseFolder
+
+	BaseFolder = "MY COMPUTER"
+	answer = MsgBox("已经处理完成，还要继续处理么？",68,"按日期存放文件")
+Loop Until answer = 7 'vbNo
+
+'重置全部文件夹的属性，恢复正常
+Sub ResetFolderAttributes(BaseFolder)
 	Set objFolder = objFSO.GetFolder(BaseFolder)
 	Set colSubFolders = objFolder.SubFolders
 	For Each objSubFolder in colSubFolders
@@ -19,9 +29,22 @@ Do
 				objSubFolder.Attributes = 0
 		End Select
 	Next
-	BaseFolder = "MY COMPUTER"
-	answer=MsgBox("已经处理完成，还要继续处理么？",68,"按日期存放文件")
-Loop Until answer = 7 'vbNo
+End Sub
+'恶意程序文件名与文件夹相同
+'找到后删除即可
+Sub DeleteBadEXE(BaseFolder)
+	Set objFolder = objFSO.GetFolder(BaseFolder)
+	Set colFiles = objFolder.Files
+	
+	For Each oFile In colFiles
+		FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
+		If objFSO.FolderExists(BaseFolder & FileNameBody) Then
+			'删除当前文件
+			'WScript.Echo FileNameBody
+			oFile.Delete
+		End If
+	Next
+End Sub
 
 Function BrowseFolder( myStartLocation, blnSimpleDialog )
 '打开“浏览文件夹对话框”
