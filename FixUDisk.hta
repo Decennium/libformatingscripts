@@ -29,11 +29,11 @@ window.moveTo screen.availWidth/4,screen.availHeight/4
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 
-'动态显示盘符
 Sub Window_Onload()
 	RefreshRemovableDisk
 End Sub
 
+'动态显示盘符
 Sub RefreshRemovableDisk()
 	Dim d, dc
 	Set dc = objFSO.Drives

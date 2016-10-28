@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- <meta http-equiv="x-ua-compatible" content="ie=edge" />
+ -->
+<meta http-equiv="x-ua-compatible" content="ie=10">
+<meta charset="gbk">
+<meta http-equiv="content-type" content="text/html;charset=gbk">
+<title>光盘批量自动复制工具</title>
+<style type="text/css">
+body {cursor:default;}
+</style>
+<HTA:APPLICATION
+	ID="CDROM_Auto_XCopy_Tool"
+	APPLICATIONNAME="CDROM_Auto_XCopy_Tool"
+	SCROLL="no"
+	ContextMenu="no"
+	SINGLEINSTANCE="yes"
+	WINDOWSTATE="normal"
+	innerBorder="no"
+	MaximizeButton="no"
+	MinimizeButton="no"
+	SCROLL="no"
+	NAVIGABLE="yes"
+	BORDER="thin"
+	ICON="%SystemRoot%/system32/cleanmgr.exe"
+>
+</head>
+<SCRIPT Language="VBScript">
+' resize to quarter of screen area, centered
+window.resizeTo 400,350
+window.moveTo screen.availWidth/4,screen.availHeight/4
+
+Const ForReading = 1, ForWriting = 2, ForAppending = 8
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set objRegEx = CreateObject("VBScript.RegExp")
+Set oShell = CreateObject ("WScript.Shell")
+Set objApp = CreateObject("shell.application")
+Set sapi = CreateObject("sapi.spvoice")
+
+Set wmpObject = CreateObject("WMPlayer.OCX.7")
+Set cdroms = wmpObject.cdromCollection
+CDROM_Count = 0
+
+Sub SelectCDROM()
+	'选择光驱
+	CDROM = "MY COMPUTER"
+	CDROM=BrowseFolder(CDROM,"选择光驱",True)
+
+End Sub
+
+Sub SelectFolder()
+	'选择目标文件夹
+	BaseFolder = "MY COMPUTER"
+	BaseFolder=BrowseFolder(BaseFolder,"选择目标文件夹",True)
+
+End Sub
+
+Sub CDROM_XCopy()
+Do
+	'弹出光驱，放入光盘
+	If cdroms.Count >= 1 Then
+		For z = 0 to cdroms.Count - 1
+	        cdroms.Item(z).eject
+	    Next
+	    '弹出
+		For i = 1 To  5
+			sapi.Speak "请插入光盘"
+			WScript.Sleep(1000)
+		Next
+		'等待并提醒
+	    For z = 0 to cdroms.Count - 1
+	        cdroms.Item(z).eject
+	    Next
+	    '收入
+	End If
+
+	sapi.Speak "正在读取光盘，请稍后"
+	WScript.Sleep(1000*10)
+	'此处Sleep可以考虑用循环加判断isReady来代替
+	
+	If objFSO.GetDrive(CDROM).IsReady Then
+		CDROM_Count = CDROM_Count +1
+		CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
+		If Trim(CDROM_Name) = "" Then
+			CDROM_Name = CDROM_Count & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
+		Else
+			'如果卷标不为空，可以考虑判断是否重复
+			CDROM_Name = CDROM_Count & "-" & CDROM_Name
+		End If
+
+		New_Folder = BaseFolder & "\" & CDROM_Name
+		If Not objFSO.FolderExists(New_Folder) Then
+			objFSO.CreateFolder New_Folder
+		End If
+		
+		'oShell.Run "cmd /c xcopy "&CDROM&"*.* "&New_Folder &"\"&" /s /h /r /y /c",7,True
+		set objTargetFolder = objApp.NameSpace(New_Folder & "\")
+		
+		if not objTargetFolder is nothing then
+			objTargetFolder.CopyHere CDROM & "*.*",16+512
+			'16 = Click "Yes to All" in any dialog box displayed.
+			'512 = Do not confirm the creation of a new directory if the operation requires one to be created.
+		end if
+
+		sapi.Speak "复制光盘完成",1
+	Else
+		sapi.Speak "没有发现光盘，还要继续处理吗？",1
+		'1 = SVSFlagsAsync 异步处理。
+		'Specifies that the Speak call should be asynchronous. 
+		'That is, it will return immediately after the speak request is queued.
+		Answer = MsgBox("没有发现光盘，还要继续处理么？",68,"复制光盘")
+		If Answer = 7 Then 'vbNo
+			Exit Do
+		End If
+	End If
+Loop 'Until answer = 7 'vbNo
+sapi.Speak "下次再见"
+
+End Sub
+
+Function BrowseFolder( myStartLocation, strPrompt, blnSimpleDialog )
+'打开“浏览文件夹对话框”
+	Const MY_COMPUTER   = &H11&
+	Const WINDOW_HANDLE = 0 '此处必须为0
+	
+	Dim numOptions, objFolder, objFolderItem
+	Dim objPath, objShell, strPath
+	
+	'为对话框设置参数
+	If strPrompt = "" Then
+		strPrompt = "Select a folder:"
+	End If
+	
+	If blnSimpleDialog = True Then
+		numOptions = 0      '简单对话框
+	Else
+		numOptions = &H10&  '添加一个输入文件夹路径的输入框
+	End If
+	
+	Set objShell = CreateObject( "Shell.Application" )
+	
+	If UCase( myStartLocation ) = "MY COMPUTER" Then
+		Set objFolder = objShell.Namespace( MY_COMPUTER )
+		Set objFolderItem = objFolder.Self
+		strPath = objFolderItem.Path
+	Else
+		strPath = myStartLocation
+	End If
+	
+	Set objFolder = objShell.BrowseForFolder( WINDOW_HANDLE, strPrompt, numOptions, strPath )
+	If objFolder Is Nothing Then
+		BrowseFolder = ""
+		Exit Function
+	End If
+	
+	Set objFolderItem = objFolder.Self
+	objPath = objFolderItem.Path
+	BrowseFolder = objPath
+End Function
+
+Sub Window_Onload()
+	
+End Sub
+
+Sub nwaittime_onkeypress()
+	If (window.event.keyCode < 45 OR window.event.keyCode > 57) Then
+		window.event.returnValue = false
+	End If
+End Sub
+
+Sub twaittime_onchange()
+	document.all("nwaittime").value = document.all("twaittime").value
+	'msgbox document.all("twaittime").value
+End Sub
+
+Sub ExitHTA
+    self.close()
+End Sub
+</SCRIPT>
+<body STYLE="background-color:buttonface;">
+<div name="appBody" id="appBody" style="display:block;">
+此软件执行以下几件事情：
+<hr />
+选定来源光驱：
+<br>
+<input type="text" name="cdrompath" id="cdrompath" size="30" value="" disabled>
+<button accesskey="C" onclick="SelectCDROM()">来源光驱(<u>C</u>)</button>
+<br>
+选定本地目标文件夹：
+<br>
+<input type="text" name="folderpath" id="folderpath" size="30" value="" disabled>
+<button accesskey="F" onclick="SelectFolder()">目标文件夹(<u>F</u>)</button>
+<br>
+光驱等待时间：
+<!-- <input type="text" style="ime-mode:disabled" onkeypress="javascript:if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" name="waittime" id="waittime" value="10" size="2">秒钟。 -->
+<input type="text" name="nwaittime" id="nwaittime" style="ime-mode:disabled" onkeypress="javascript:if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" value="10" size="2">秒钟。<br>
+<input type="range" name="twaittime" id="twaittime" min="5" max="30" step="5" value="10" size="10px"><label name="lwait" id="lwait"></label>秒钟。
+</div>
+<hr />
+如果光驱内没有放入光盘，则自动结束。
+<hr />
+<div align="center">
+<button name="Run_Button" onClick="CDROM_XCopy" accesskey="S" disabled>开始(<u>S</u>)</button>&nbsp;&nbsp;
+<button onClick="self.close()" accesskey="X">退出(<u>X</u>)</button>
+</div>
+</body>
+</html>
