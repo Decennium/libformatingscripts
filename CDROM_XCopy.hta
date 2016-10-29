@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- <meta http-equiv="x-ua-compatible" content="ie=edge" />
- -->
 <meta http-equiv="x-ua-compatible" content="ie=10">
 <meta charset="gbk">
 <meta http-equiv="content-type" content="text/html;charset=gbk">
@@ -13,22 +11,21 @@ body {cursor:default;}
 <HTA:APPLICATION
 	ID="CDROM_Auto_XCopy_Tool"
 	APPLICATIONNAME="CDROM_Auto_XCopy_Tool"
-	SCROLL="no"
+	BORDER = "dialog"
+	BORDERSTYLE = "normal"
+	CAPTION="normal"
 	ContextMenu="no"
-	SINGLEINSTANCE="yes"
-	WINDOWSTATE="normal"
-	innerBorder="no"
+	ICON="%SystemRoot%/system32/cleanmgr.exe"
 	MaximizeButton="no"
 	MinimizeButton="no"
 	SCROLL="no"
-	NAVIGABLE="yes"
-	BORDER="thin"
-	ICON="%SystemRoot%/system32/cleanmgr.exe"
->
+	SINGLEINSTANCE="yes"
+	WINDOWSTATE="normal"
+	innerBorder="no">
 </head>
 <SCRIPT Language="VBScript">
 ' resize to quarter of screen area, centered
-window.resizeTo 400,350
+window.resizeTo 550,400
 window.moveTo screen.availWidth/4,screen.availHeight/4
 
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
@@ -46,14 +43,20 @@ Sub SelectCDROM()
 	'选择光驱
 	CDROM = "MY COMPUTER"
 	CDROM=BrowseFolder(CDROM,"选择光驱",True)
-
+	cdrompath.value = CDROM
+	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
+		Run_Button.disabled = False
+	End If
 End Sub
 
 Sub SelectFolder()
 	'选择目标文件夹
 	BaseFolder = "MY COMPUTER"
 	BaseFolder=BrowseFolder(BaseFolder,"选择目标文件夹",True)
-
+	folderpath.value = BaseFolder
+	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
+		Run_Button.disabled = False
+	End If
 End Sub
 
 Sub CDROM_XCopy()
@@ -64,7 +67,7 @@ Do
 	        cdroms.Item(z).eject
 	    Next
 	    '弹出
-		For i = 1 To  5
+		For i = 1 To  twaittime.value/2
 			sapi.Speak "请插入光盘"
 			WScript.Sleep(1000)
 		Next
@@ -83,7 +86,7 @@ Do
 		CDROM_Count = CDROM_Count +1
 		CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
 		If Trim(CDROM_Name) = "" Then
-			CDROM_Name = CDROM_Count & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
+			CDROM_Name = cdromname.value & "-" & CDROM_Count & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
 		Else
 			'如果卷标不为空，可以考虑判断是否重复
 			CDROM_Name = CDROM_Count & "-" & CDROM_Name
@@ -170,7 +173,7 @@ Sub nwaittime_onkeypress()
 End Sub
 
 Sub twaittime_onchange()
-	document.all("nwaittime").value = document.all("twaittime").value
+	document.all("lwait").innertext = document.all("twaittime").value
 	'msgbox document.all("twaittime").value
 End Sub
 
@@ -193,11 +196,15 @@ End Sub
 <button accesskey="F" onclick="SelectFolder()">目标文件夹(<u>F</u>)</button>
 <br>
 光驱等待时间：
-<!-- <input type="text" style="ime-mode:disabled" onkeypress="javascript:if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" name="waittime" id="waittime" value="10" size="2">秒钟。 -->
-<input type="text" name="nwaittime" id="nwaittime" style="ime-mode:disabled" onkeypress="javascript:if (event.keyCode < 45 || event.keyCode > 57) event.returnValue = false;" value="10" size="2">秒钟。<br>
-<input type="range" name="twaittime" id="twaittime" min="5" max="30" step="5" value="10" size="10px"><label name="lwait" id="lwait"></label>秒钟。
+<!-- 
+<input type="text" name="nwaittime" id="nwaittime" style="ime-mode:disabled" value="10" size="2">秒钟。<br>
+ -->
+<input type="range" name="twaittime" id="twaittime" min="5" max="30" step="5" value="10"> <label name="lwait" id="lwait">10</label>秒钟。<br>
+默认新建文件夹名是光盘卷标，<br>如果光盘没有卷标，请在此输入默认文件夹名前缀：<br>
+<input type="text" name="cdromname" id="cdromname" value="cdrom" size="10"><label for="cdromname" name="lname" id="lname">#00</label>
 </div>
 <hr />
+<Div name="appInfo" id="appInfo" style="display:block;">光驱已经弹出，还剩下<label name="ltime" id="ltime">10</label>秒钟。</Div>
 如果光驱内没有放入光盘，则自动结束。
 <hr />
 <div align="center">

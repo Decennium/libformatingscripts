@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="gbk">
@@ -9,18 +10,17 @@ body {cursor:default;}
 <HTA:APPLICATION 
 	ID="objHTA_Create_Folder_By_Date"
 	APPLICATIONNAME="HTA_Folder_Date"
-	SCROLL="no"
 	BORDER = "dialog"
 	BORDERSTYLE = "normal"
-	innerBorder="no"
-	SINGLEINSTANCE="yes"
+	CAPTION="normal"
+	ContextMenu="no"
+	ICON=""
 	MaximizeButton="no"
 	MinimizeButton="no"
+	SCROLL="no"
+	SINGLEINSTANCE="yes"
 	WINDOWSTATE="normal"
-	CAPTION="normal"
-	ICON=""
-	ContextMenu="no"
->
+	innerBorder="no">
 </head>
 <SCRIPT Language="VBScript">
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
@@ -30,17 +30,15 @@ Set objRegEx = CreateObject("VBScript.RegExp")
 Set oShell = CreateObject ("WScript.Shell")
 FolderStyle = 3
 
-Sub ExitHTA
-    self.close()
-End Sub
-
-Sub Window_onLoad
+Sub Window_Onload()
     ' resize to quarter of screen area, centered
     window.resizeTo 450,400
     window.moveTo screen.availWidth/4,screen.availHeight/4
 End Sub 
 
-'Indicates which radio button was selected
+Sub ExitHTA()
+    self.close()
+End Sub
 
 Function setFolderStyle()
 	For Each button in FolderOption
@@ -174,7 +172,7 @@ End Function
 <hr>
 <div align="right">
 <button accesskey="S" name="run_button" onclick="RunIt()" disabled>开始分类(<u>S</u>)</button>&nbsp;&nbsp;&nbsp;&nbsp;
-<button accesskey="X" name="exit_button"  onClick="ExitHTA">退出(<u>X</u>)</button>&nbsp;&nbsp;
+<button accesskey="X" name="exit_button"  onClick="ExitHTA()">退出(<u>X</u>)</button>&nbsp;&nbsp;
 </div>
 <hr>
 <p>此软件如何如何强大快捷能干，巴拉巴拉……</p>
