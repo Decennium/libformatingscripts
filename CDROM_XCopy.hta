@@ -84,12 +84,13 @@ Do
 	
 	If objFSO.GetDrive(CDROM).IsReady Then
 		CDROM_Count = CDROM_Count +1
+		CDROM_number = right("00" & CDROM_Count,2)
 		CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
 		If Trim(CDROM_Name) = "" Then
-			CDROM_Name = cdromname.value & "-" & CDROM_Count & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
+			CDROM_Name = cdromname.value & "-" & CDROM_number & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
 		Else
 			'如果卷标不为空，可以考虑判断是否重复
-			CDROM_Name = CDROM_Count & "-" & CDROM_Name
+			CDROM_Name = CDROM_Name & "-" & CDROM_number
 		End If
 
 		New_Folder = BaseFolder & "\" & CDROM_Name
@@ -97,7 +98,6 @@ Do
 			objFSO.CreateFolder New_Folder
 		End If
 		
-		'oShell.Run "cmd /c xcopy "&CDROM&"*.* "&New_Folder &"\"&" /s /h /r /y /c",7,True
 		set objTargetFolder = objApp.NameSpace(New_Folder & "\")
 		
 		if not objTargetFolder is nothing then
@@ -110,11 +110,11 @@ Do
 	Else
 		sapi.Speak "没有发现光盘，还要继续处理吗？",1
 		'1 = SVSFlagsAsync 异步处理。
-		'Specifies that the Speak call should be asynchronous. 
-		'That is, it will return immediately after the speak request is queued.
 		Answer = MsgBox("没有发现光盘，还要继续处理么？",68,"复制光盘")
 		If Answer = 7 Then 'vbNo
 			Exit Do
+		Else
+			'继续工作，弹出光驱托盘。
 		End If
 	End If
 Loop 'Until answer = 7 'vbNo
