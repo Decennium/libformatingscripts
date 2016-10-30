@@ -6,7 +6,7 @@
 <meta http-equiv="content-type" content="text/html;charset=gbk">
 <title>光盘批量自动复制工具</title>
 <style type="text/css">
-body {cursor:default;}
+body {cursor:default;line-height:150%;}
 </style>
 <HTA:APPLICATION
 	ID="CDROM_Auto_XCopy_Tool"
@@ -25,7 +25,7 @@ body {cursor:default;}
 </head>
 <SCRIPT Language="VBScript">
 ' resize to quarter of screen area, centered
-window.resizeTo 500,500
+window.resizeTo 500,600
 window.moveTo screen.availWidth/4,screen.availHeight/4
 
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
@@ -37,11 +37,58 @@ Set sapi = CreateObject("sapi.spvoice")
 
 Set wmpObject = CreateObject("WMPlayer.OCX.7")
 Set cdroms = wmpObject.cdromCollection
+CDROM = "MY COMPUTER"
 CDROM_Count = 0
+
+Const bOut = True
+Const bIn = False
+CDROM_State = bIn
+
+BaseFolder = "MY COMPUTER"
+
+iWaitTime = 0
+iInterval_ID = 0
+
+Sub EjectCD(bState)
+	If cdroms.Count >= 1 Then
+		For z = 0 to cdroms.Count - 1
+			cdroms.Item(z).eject
+			CDROM_State = bState
+		Next
+	End If
+End Sub
+
+Sub CloseCD()
+	If cdroms.Count >= 1 Then
+		For z = 0 to cdroms.Count - 1
+			cdroms.Item(z).eject
+		Next
+		CDROM_State = False
+	End If
+End Sub
+	
+Sub WaitCD()
+	iWaitTime = iWaitTime + 1
+	if iWaitTime>5 OR objFSO.GetDrive(CDROM).IsReady then
+		window.clearTimeOut iInterval_ID
+		txtInfo = "光盘已经收回，正在读取，请勿作任何操作！"
+		sapi.Speak txtInfo, 1
+		appInfo.innertext = txtInfo
+		If Not objFSO.GetDrive(CDROM).IsReady Then EjectCD bIn
+		txtInfo = "光盘" & objFSO.GetDrive(CDROM).VolumeName & "已经准备好，开始读取数据。"
+		sapi.Speak txtInfo, 1
+		appInfo.innertext = txtInfo
+	else
+		txtInfo = "请放入光盘，等待手动弹入或者自动收回"
+		appInfo.innertext = txtInfo
+		sapi.Speak txtInfo, 1
+		iInterval_ID = window.setTimeOut("WaitCD()",3000)
+	end if
+	
+End Sub
 
 Sub SelectCDROM()
 	'选择光驱
-	CDROM = "MY COMPUTER"
 	CDROM=BrowseFolder(CDROM,"选择光驱",True)
 	cdrompath.value = CDROM
 	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
@@ -51,7 +98,6 @@ End Sub
 
 Sub SelectFolder()
 	'选择目标文件夹
-	BaseFolder = "MY COMPUTER"
 	BaseFolder=BrowseFolder(BaseFolder,"选择目标文件夹",True)
 	folderpath.value = BaseFolder
 	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
@@ -62,66 +108,59 @@ End Sub
 Sub CDROM_XCopy()
 Do
 	'弹出光驱，放入光盘
-	If cdroms.Count >= 1 Then
-		For z = 0 to cdroms.Count - 1
-	        cdroms.Item(z).eject
-	    Next
-	    '弹出
-		For i = 1 To  twaittime.value/2
-			sapi.Speak "请插入光盘"
-			WScript.Sleep(1000)
-		Next
-		'等待并提醒
-	    For z = 0 to cdroms.Count - 1
-	        cdroms.Item(z).eject
-	    Next
-	    '收入
-	End If
-
-	sapi.Speak "正在读取光盘，请稍后"
-	WScript.Sleep(1000*10)
-	'此处Sleep可以考虑用循环加判断isReady来代替
-	
-	If objFSO.GetDrive(CDROM).IsReady Then
-		CDROM_Count = CDROM_Count +1
-		CDROM_number = right("00" & CDROM_Count,2)
-		CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
-		If Trim(CDROM_Name) = "" Then
-			CDROM_Name = cdromname.value & "-" & CDROM_number & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
-		Else
-			'如果卷标不为空，可以考虑判断是否重复
-			CDROM_Name = CDROM_Name & "-" & CDROM_number
-		End If
-
-		New_Folder = BaseFolder & "\" & CDROM_Name
-		If Not objFSO.FolderExists(New_Folder) Then
-			objFSO.CreateFolder New_Folder
-		End If
-		
-		set objTargetFolder = objApp.NameSpace(New_Folder & "\")
-		
-		if not objTargetFolder is nothing then
-			objTargetFolder.CopyHere CDROM & "*.*",16+512
-			'16 = Click "Yes to All" in any dialog box displayed.
-			'512 = Do not confirm the creation of a new directory if the operation requires one to be created.
-		end if
-
-		sapi.Speak "复制光盘完成",1
+	If CDROM_State = bIn Then
+		EjectCD
 	Else
-		sapi.Speak "没有发现光盘，还要继续处理吗？",1
-		'1 = SVSFlagsAsync 异步处理。
-		Answer = MsgBox("没有发现光盘，还要继续处理么？",68,"复制光盘")
-		If Answer = 7 Then 'vbNo
-			Exit Do
-		Else
-			'继续工作，弹出光驱托盘。
-		End If
+		WaitCD
 	End If
-Loop 'Until answer = 7 'vbNo
-sapi.Speak "下次再见"
+	
+	sapi.Speak "正在读取光盘，请稍后"
 
+	If objFSO.GetDrive(CDROM).IsReady Then
+		CopyCD
+	Else
+		Answer = AskContinue
+	End If
+Loop Until Answer = 7 'vbNo
+sapi.Speak "下次再见"
 End Sub
 
+Function AskContinue()
+	sapi.Speak "没有发现光盘，还要继续处理吗？",1
+	'1 = SVSFlagsAsync 异步处理。
+	Answer = MsgBox("没有发现光盘，还要继续处理么？",68,"复制光盘")
+	'If Answer = 7 Then 'vbNo
+	AskContinue = Answer
+End Function
+
+Sub CopyCD()
+	CDROM_Count = CDROM_Count +1
+	CDROM_number = right("00" & CDROM_Count,2)
+	CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
+
+	If Rforce(1).checked OR Trim(CDROM_Name) = "" Then
+		CDROM_Name = cdromname.value & "-" & CDROM_number 
+			'& "-" & Replace(Date(),"-","")& Replace(Time(),":","")
+	Else
+		'如果卷标不为空，可以考虑判断是否重复
+		CDROM_Name = CDROM_Name & "-" & CDROM_number
+	End If
+
+	New_Folder = BaseFolder & "\" & CDROM_Name
+	If Not objFSO.FolderExists(New_Folder) Then
+		objFSO.CreateFolder New_Folder
+	End If
+	
+	set objTargetFolder = objApp.NameSpace(New_Folder & "\")
+	
+	if not objTargetFolder is nothing then
+		objTargetFolder.CopyHere CDROM & "*.*",16+512
+		'16 = Click "Yes to All" in any dialog box displayed.
+		'512 = Do not confirm the creation of a new directory if the operation requires one to be created.
+	end if
+
+	sapi.Speak "复制光盘完成",1
+End Sub
 Function BrowseFolder( myStartLocation, strPrompt, blnSimpleDialog )
 '打开“浏览文件夹对话框”
 	Const MY_COMPUTER   = &H11&
@@ -202,15 +241,15 @@ End Sub
 <input type="range" name="twaittime" id="twaittime" min="5" max="30" step="5" value="10"> <label name="lwait" id="lwait" for="twaittime" accesskey="M">10</label>秒钟(<u>M</u>)。
 <hr>
 默认新建文件夹名是光盘卷标，<br>
-<input type="radio" name="Rforce" id="notforce" checked><label for="notforce">如果光盘没有卷标，则使用自定义文件夹名前缀。<br>
-<input type="radio" name="Rforce" id="forcefolder"><label for="forcefolder">无论如何都强制使用自定义文件夹名前缀。<br>
-<label for="cdromname">自定义文件夹名前缀：</label><input type="text" name="cdromname" id="cdromname" value="cdrom" size="10">#00<br>
-</label>
-
+<input type="radio" name="Rforce" id="notforce" value="notforce" checked><label for="notforce">如果光盘没有卷标，则使用自定义文件夹名前缀。<br>
+<input type="radio" name="Rforce" id="forcefolder" value="force"><label for="forcefolder">无论如何都强制使用自定义文件夹名前缀。<br>
+<label for="cdromname">自定义文件夹名前缀：</label><input type="text" name="cdromname" id="cdromname" value="cdrom" size="10">，后自动接光盘顺序编号。
 </div>
 <hr />
-<Div name="appInfo" id="appInfo" style="display:block;">光驱已经弹出，还剩下<label name="ltime" id="ltime">10</label>秒钟。</Div>
-如果光驱内没有放入光盘，则自动结束。
+<Div name="infIn" id="infIn" style="display:block;">光驱托盘已经收起。</Div>
+<Div name="infCopy" id="infCopy" style="display:none;">光驱托盘已经收起，正在读取。请不要强行手动弹出托盘。</Div>
+<Div name="infOut" id="infOut" style="display:none;">光驱托盘已经弹出，请不要手动收起光驱托盘。</Div>
+<div>如果光驱内没有放入光盘，则自动结束。</div>
 <hr />
 <div align="center">
 <button name="Run_Button" onClick="CDROM_XCopy" accesskey="S" disabled>开始(<u>S</u>)</button>&nbsp;&nbsp;
