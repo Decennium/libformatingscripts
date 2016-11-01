@@ -52,7 +52,9 @@ Do
 	
 	If objFSO.GetDrive(CDROM).IsReady Then
 		CDROM_Count = CDROM_Count +1
+		objRegEx.Pattern = "[\\\/\:\*\?\" & """" & "\<\>\|]"
 		CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
+		CDROM_Name = objRegEx.Replace(CDROM_Name," ")
 		If Trim(CDROM_Name) = "" Then
 			CDROM_Name = CDROM_Count & "-" & Replace(Date(),"-","")& Replace(Time(),":","")
 		Else

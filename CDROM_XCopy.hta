@@ -31,6 +31,7 @@ window.moveTo screen.availWidth/4,screen.availHeight/4
 Const ForReading = 1, ForWriting = 2, ForAppending = 8
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 Set objRegEx = CreateObject("VBScript.RegExp")
+objRegEx.Global = True
 Set oShell = CreateObject ("WScript.Shell")
 Set objApp = CreateObject("shell.application")
 Set sapi = CreateObject("sapi.spvoice")
@@ -44,52 +45,58 @@ Const bOut = True
 Const bIn = False
 CDROM_State = bIn
 
-BaseFolder = "MY COMPUTER"
+targetFolder = "MY COMPUTER"
 
 iWaitTime = 0
 iInterval_ID = 0
 
 Sub EjectCD(bState)
-	If cdroms.Count >= 1 Then
-		For z = 0 to cdroms.Count - 1
-			cdroms.Item(z).eject
-			CDROM_State = bState
-		Next
-	End If
-End Sub
-
-Sub CloseCD()
-	If cdroms.Count >= 1 Then
+	If CDROM_State <> bState And cdroms.Count >= 1 Then
 		For z = 0 to cdroms.Count - 1
 			cdroms.Item(z).eject
 		Next
-		CDROM_State = False
+		CDROM_State = bState
 	End If
-End Sub
-	
-Sub WaitCD()
-	iWaitTime = iWaitTime + 1
-	if iWaitTime>5 OR objFSO.GetDrive(CDROM).IsReady then
-		window.clearTimeOut iInterval_ID
-		txtInfo = "光盘已经收回，正在读取，请勿作任何操作！"
-		sapi.Speak txtInfo, 1
-		appInfo.innertext = txtInfo
-		If Not objFSO.GetDrive(CDROM).IsReady Then EjectCD bIn
-		txtInfo = "光盘" & objFSO.GetDrive(CDROM).VolumeName & "已经准备好，开始读取数据。"
-		sapi.Speak txtInfo, 1
-		appInfo.innertext = txtInfo
-	else
+	If CDROM_State = bOut Then
 		txtInfo = "请放入光盘，等待手动弹入或者自动收回"
 		appInfo.innertext = txtInfo
 		sapi.Speak txtInfo, 1
-		iInterval_ID = window.setTimeOut("WaitCD()",3000)
-	end if
-	
+	Else
+		txtInfo = "光盘已经收回，正在读取，请勿作任何操作！"
+		appInfo.innertext = txtInfo
+		sapi.Speak txtInfo, 1
+	End If
+End Sub
+
+Sub WaitCD()
+	iWaitTime = iWaitTime + 3
+	if iWaitTime > twaittime.value Then
+		EjectCD bIn
+		If objFSO.GetDrive(CDROM).IsReady then
+			'window.clearTimeOut iInterval_ID
+			'If Not objFSO.GetDrive(CDROM).IsReady Then EjectCD bIn
+			txtInfo = "光盘" & objFSO.GetDrive(CDROM).VolumeName & "已经准备好，开始读取数据。"
+			sapi.Speak txtInfo, 1
+			appInfo.innertext = txtInfo
+			CopyCD
+		Else
+			If AskContinue = 7 Then 'vbNo
+				txtInfo = "复制光盘结束"
+				sapi.Speak txtInfo, 1
+				appInfo.innertext = txtInfo
+				window.clearTimeOut iInterval_ID
+				Exit Sub
+			End If
+		End If
+		iWaitTime = 0
+		EjectCD bOut
+	End If
+	iInterval_ID = window.setTimeOut("WaitCD()",3000)
 End Sub
 
 Sub SelectCDROM()
 	'选择光驱
-	CDROM=BrowseFolder(CDROM,"选择光驱",True)
+	CDROM = BrowseFolder(CDROM,"选择光驱",True)
 	cdrompath.value = CDROM
 	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
 		Run_Button.disabled = False
@@ -98,31 +105,16 @@ End Sub
 
 Sub SelectFolder()
 	'选择目标文件夹
-	BaseFolder=BrowseFolder(BaseFolder,"选择目标文件夹",True)
-	folderpath.value = BaseFolder
+	targetFolder = BrowseFolder(targetFolder,"选择目标文件夹",True)
+	folderpath.value = targetFolder
 	If instr(cdrompath.value,"\")>0 And instr(folderpath.value,"\")>0 Then
 		Run_Button.disabled = False
 	End If
 End Sub
 
 Sub CDROM_XCopy()
-Do
-	'弹出光驱，放入光盘
-	If CDROM_State = bIn Then
-		EjectCD
-	Else
-		WaitCD
-	End If
-	
-	sapi.Speak "正在读取光盘，请稍后"
-
-	If objFSO.GetDrive(CDROM).IsReady Then
-		CopyCD
-	Else
-		Answer = AskContinue
-	End If
-Loop Until Answer = 7 'vbNo
-sapi.Speak "下次再见"
+	'EjectCD bOut
+	WaitCD
 End Sub
 
 Function AskContinue()
@@ -136,7 +128,9 @@ End Function
 Sub CopyCD()
 	CDROM_Count = CDROM_Count +1
 	CDROM_number = right("00" & CDROM_Count,2)
+	objRegEx.Pattern = "[\\\/\:\*\?\" & """" & "\<\>\|]"
 	CDROM_Name = objFSO.GetDrive(CDROM).VolumeName
+	CDROM_Name = objRegEx.Replace(CDROM_Name," ")
 
 	If Rforce(1).checked OR Trim(CDROM_Name) = "" Then
 		CDROM_Name = cdromname.value & "-" & CDROM_number 
@@ -146,7 +140,7 @@ Sub CopyCD()
 		CDROM_Name = CDROM_Name & "-" & CDROM_number
 	End If
 
-	New_Folder = BaseFolder & "\" & CDROM_Name
+	New_Folder = targetFolder & "\" & CDROM_Name
 	If Not objFSO.FolderExists(New_Folder) Then
 		objFSO.CreateFolder New_Folder
 	End If
@@ -156,7 +150,7 @@ Sub CopyCD()
 	if not objTargetFolder is nothing then
 		objTargetFolder.CopyHere CDROM & "*.*",16+512
 		'16 = Click "Yes to All" in any dialog box displayed.
-		'512 = Do not confirm the creation of a new directory if the operation requires one to be created.
+		'512 = Do not confirm the creation of a new directory
 	end if
 
 	sapi.Speak "复制光盘完成",1
