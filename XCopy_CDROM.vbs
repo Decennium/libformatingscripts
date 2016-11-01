@@ -32,23 +32,28 @@ Do
 	'弹出光驱，放入光盘
 	If cdroms.Count >= 1 Then
 		For z = 0 to cdroms.Count - 1
-	        cdroms.Item(z).eject
-	    Next
-	    '弹出
+			cdroms.Item(z).eject
+		Next
+		'弹出
 		For i = 1 To  5
 			sapi.Speak "请插入光盘"
 			WScript.Sleep(1000)
 		Next
 		'等待并提醒
-	    For z = 0 to cdroms.Count - 1
-	        cdroms.Item(z).eject
-	    Next
-	    '收入
+		For z = 0 to cdroms.Count - 1
+			cdroms.Item(z).eject
+		Next
+		'收入
 	End If
 
-	sapi.Speak "正在读取光盘，请稍后"
-	WScript.Sleep(1000*10)
-	'此处Sleep可以考虑用循环加判断isReady来代替
+	sapi.Speak "正在读取光盘，请稍后",1
+	i = 0
+	Do
+		i = i + 1
+		WScript.Sleep(1000)
+		If objFSO.GetDrive(CDROM).IsReady OR i >20 Then Exit Do
+		'等待20秒或光驱已经准备好
+	Loop
 	
 	If objFSO.GetDrive(CDROM).IsReady Then
 		CDROM_Count = CDROM_Count +1
@@ -80,8 +85,6 @@ Do
 	Else
 		sapi.Speak "没有发现光盘，还要继续处理吗？",1
 		'1 = SVSFlagsAsync 异步处理。
-		'Specifies that the Speak call should be asynchronous. 
-		'That is, it will return immediately after the speak request is queued.
 		Answer = MsgBox("没有发现光盘，还要继续处理么？",68,"复制光盘")
 		If Answer = 7 Then 'vbNo
 			Exit Do
@@ -105,9 +108,9 @@ Function BrowseFolder( myStartLocation, strPrompt, blnSimpleDialog )
 	End If
 	
 	If blnSimpleDialog = True Then
-		numOptions = 0      '简单对话框
+		numOptions = 0 '简单对话框
 	Else
-		numOptions = &H10&  '添加一个输入文件夹路径的输入框
+		numOptions = &H10& '添加一个输入文件夹路径的输入框
 	End If
 	
 	Set objShell = CreateObject( "Shell.Application" )
