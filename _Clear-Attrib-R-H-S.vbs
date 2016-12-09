@@ -15,7 +15,7 @@ Do
 	DeleteBadEXE BaseFolder
 
 	BaseFolder = "MY COMPUTER"
-	answer = MsgBox("已经处理完成，还要继续处理么？",68,"按日期存放文件")
+	answer = MsgBox("已经处理完成，还要继续处理么？",68,"中毒优盘修复工具")
 Loop Until answer = 7 'vbNo
 
 '重置全部文件夹的属性，恢复正常
@@ -33,15 +33,19 @@ End Sub
 '恶意程序文件名与文件夹相同
 '找到后删除即可
 Sub DeleteBadEXE(BaseFolder)
+	On Error Resume Next
 	Set objFolder = objFSO.GetFolder(BaseFolder)
 	Set colFiles = objFolder.Files
 	
 	For Each oFile In colFiles
-		FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
-		If objFSO.FolderExists(BaseFolder & FileNameBody) Then
-			'删除当前文件
-			'WScript.Echo FileNameBody
-			oFile.Delete
+		If InStrRev(oFile.Name,".")-1 > 0 Then
+			FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
+			If objFSO.FolderExists(BaseFolder & FileNameBody) Then
+				'删除当前文件
+				'WScript.Echo FileNameBody
+				'oFile.Delete
+				objFSO.DeleteFile oFile.Name
+			End If
 		End If
 	Next
 End Sub

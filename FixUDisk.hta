@@ -25,7 +25,7 @@ body {cursor:default;line-height:150%;}
 </head>
 <SCRIPT Language="VBScript">
 ' resize to quarter of screen area, centered
-window.resizeTo 400,300
+window.resizeTo 400,400
 window.moveTo screen.availWidth/4,screen.availHeight/4
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
@@ -39,7 +39,7 @@ Sub RefreshRemovableDisk()
 	Dim d, dc
 	Set dc = objFSO.Drives
 	For Each d in dc
-		If d.drivetype =1 then
+		'If d.drivetype =1 then
 			Set objOption = Document.createElement("OPTION")
 			objOption.Text = d.DriveLetter & ":\"
 			objOption.Value = d.DriveLetter & ":\"
@@ -49,7 +49,7 @@ Sub RefreshRemovableDisk()
 			DriveList.style.visibility = "visible"
 			appBody.style.display = "block"
 			appInfo.style.display = "none"
-		End If
+		'End If
 	Next
 End Sub
 
@@ -58,7 +58,7 @@ Sub RunScript()
 	DeleteBadEXE DriveList.Value
 	If CB_DELAUTO.Checked Then DeleteAutoRun(DriveList.Value)
 	
-	If vbOK=MsgBox ("操作成功！现在查看效果？",vbOKCancel+vbInformation,Window.caption) Then
+	If vbOK=MsgBox ("操作成功！现在查看效果？",vbOKCancel+vbInformation,"中毒优盘修复工具") Then
 		expldrv="Explorer.exe /e," & DriveList.Value
 		set ws=CreateObject("WScript.Shell")
 		ws.run expldrv
@@ -86,15 +86,19 @@ End Sub
 '恶意程序文件名与文件夹相同
 '找到后删除即可
 Sub DeleteBadEXE(BaseFolder)
+On Error Resume Next
 	Set objFolder = objFSO.GetFolder(BaseFolder)
 	Set colFiles = objFolder.Files
 	
 	For Each oFile In colFiles
-		FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
-		If objFSO.FolderExists(BaseFolder & FileNameBody) Then
-			'删除当前文件
-			'WScript.Echo FileNameBody
-			oFile.Delete
+		If InStrRev(oFile.Name,".")-1 > 0 Then
+			FileNameBody = Left(oFile.Name,InStrRev(oFile.Name,".")-1)
+			If objFSO.FolderExists(BaseFolder & FileNameBody) Then
+				'删除当前文件
+				'WScript.Echo FileNameBody
+				oFile.Delete
+				'objFSO.DeleteFile oFile
+			End If
 		End If
 	Next
 End Sub
