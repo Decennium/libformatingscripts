@@ -41,6 +41,7 @@ EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
 wscript.echo vbCrLf & "完成全部工作，得到最新版《临高启明wiki.txt》。耗时 " & UsedTime & " 秒。"
+objShell.exec "explorer.exe /e, " & currentFolder
 
 Sub DownloadIndex()
 	gzfile = indexfile & ".gz"
@@ -85,7 +86,7 @@ Sub DownloadContent()
 		End If
 	Loop
 	objStream.Close
-	objFS.DeleteFile indexfile
+	'objFS.DeleteFile indexfile
 End Sub
 
 Sub gunzipFiles()
