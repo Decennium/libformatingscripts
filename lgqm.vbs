@@ -12,6 +12,7 @@ startTime = Now()
 currentFolder = "E:\Temp\lgqm-v2\"
 url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
 indexfile = currentFolder & "index.html"
+curl = "curl -H " & chr(34) & "Accept-Encoding: gzip" & chr(34) & " "
 
 Set objShell = CreateObject("WScript.Shell")
 objShell.CurrentDirectory = currentFolder
@@ -41,10 +42,17 @@ wscript.echo "完成全部工作，得到最新版《临高启明wiki.txt》。耗时 " & UsedTime & 
 
 Sub DownloadIndex()
 	gzfile = indexfile & ".gz"
-	s = "curl " & url & " -o " & gzfile
+	s = curl & url & " -o " & chr(34) & gzfile & chr(34)
 	objShell.Run s ,7, True
 	'解压缩
-	objShell.exec "gzip -df " & gzfile
+	objShell.exec "gzip -df " & chr(34) & gzfile & chr(34)
+'	objShell.Run chr(34) & "c:\Program Files\7-Zip\7z.exe" & chr(34) &" e -y " & gzfile & " -o " & currentFolder ,1, True
+	If objFS.FileExists(gzfile) Then
+	'有些文件并不是gz格式，而就是txt格式
+	'所以不能被解压，这就需要简单的更名
+		objFS.CopyFile gzfile,Mid(gzfile,1,Len(gzfile)-3),True
+		objFS.DeleteFile gzfile, True
+	End If
 	wscript.sleep 1000
 End Sub
 
@@ -63,11 +71,11 @@ Sub DownloadContent()
 		If myMatches.count > 0 Then
 			url = "http://lgqm.huiji.wiki" & myMatches(0).Submatches(0)
 			objRegEx.Pattern = "[\/:?*<>"&chr(34)&"|]"
-			title = Replace(myMatches(0).Submatches(1)," ")
+			title = objRegEx.Replace(myMatches(0).Submatches(1)," ")
 
 			n = Right("000" & i,4)
 			gzfile = currentFolder & n & " - " & title & ".txt.gz"
-			s = "curl -H " & chr(34) & "Accept-Encoding: gzip" & chr(34) & " " & url & " -o " & chr(34) & gzfile & chr(34)
+			s = curl & url & " -o " & chr(34) & gzfile & chr(34)
 			objShell.Run s,7, True
 			WScript.echo "下载完成 " & n & " - " & title & ".txt.gz"
 			i = i + 1
