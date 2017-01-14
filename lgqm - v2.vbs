@@ -83,7 +83,7 @@ Sub DownloadContent()
 		objRegEx.Pattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"&chr(34)&".+$"
 		Set myMatches = objRegEx.Execute(strline)
 		If myMatches.count > 0 Then
-			If AllStory OR aIndex(x+11) = "<p>完结" OR aIndex(x+12) = "<td>完结" OR aIndex(x+14) = "<td>已转正" Then
+			If AllStory OR aIndex(x+11) = "<p>完结" OR aIndex(x+12) = "<td>完结" OR aIndex(x+14) = "<td>已转正" OR aIndex(x+14) = "<td>部分转正" Then
 				url = "http://lgqm.huiji.wiki" & myMatches(0).Submatches(0)
 				objRegEx.Pattern = "[\/:?*<>"&chr(34)&"|]"
 				title = objRegEx.Replace(myMatches(0).Submatches(1)," ")
