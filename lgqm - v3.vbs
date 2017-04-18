@@ -30,39 +30,50 @@ objShell.CurrentDirectory = currentFolder
 
 Set objRegEx = CreateObject("VBScript.RegExp")
 objRegEx.Global = True
+URLPattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"&chr(34)&">[^<]+<\/a>.*$"
+
+UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
+
+URLHead = "http://lgqm.huiji.wiki"
+MsgHead = "下载目录并依照目录下载网页内容，生成 "
+MsgTime = " 下载并生成完成。耗时 "
+CopyTail = " 已经复制到图书库。"
+ServerAddress = "\\192.168.3.5\NewAdded\"
+
+EndKey = "printfooter"
 '===
 startTime = Now()
 lgqm_File_Name = "临高启明wiki完整版.txt"
-Wscript.echo "下载目录并依照目录下载网页内容，生成 " & lgqm_File_Name
+Wscript.echo MsgHead & lgqm_File_Name
 DownloadAll
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
-wscript.echo lgqm_File_Name & " 下载并生成完成。耗时 " & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , "\\192.168.3.5\NewAdded\" ,True
-wscript.echo vbCrLf & lgqm_File_Name & " 已经复制到图书库。"
+wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
+objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
+wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
 startTime = Now()
 lgqm_File_Name = "临高启明wiki完结或已转正版本.txt"
-Wscript.echo "下载目录并依照目录下载网页内容，生成 " & lgqm_File_Name
+Wscript.echo MsgHead & lgqm_File_Name
 DownloadEndedPart
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
-wscript.echo lgqm_File_Name & " 下载并生成完成。耗时 " & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , "\\192.168.3.5\NewAdded\" ,True
-wscript.echo vbCrLf & lgqm_File_Name & " 已经复制到图书库。"
+wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
+objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
+wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
 startTime = Now()
 lgqm_File_Name = "临高启明wiki优秀版.txt"
-Wscript.echo "下载目录并依照目录下载网页内容，生成 " & lgqm_File_Name
+Wscript.echo MsgHead & lgqm_File_Name
 DownloadBest
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
-wscript.echo lgqm_File_Name & " 下载并生成完成。耗时 " & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , "\\192.168.3.5\NewAdded\" ,True
-wscript.echo vbCrLf & lgqm_File_Name & " 已经复制到图书库。"
+wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
+objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
+wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
 objShell.Run "explorer.exe /e, " & currentFolder , 3 ,False
 
@@ -77,6 +88,7 @@ Sub DownloadAll()
 
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
+	http.setRequestHeader "User-Agent", UserAgent
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
@@ -85,19 +97,20 @@ Sub DownloadAll()
 	For x = 300 to UBound(aIndex)
 	'从第300行后不远才开始正文部分。
 		strLine = aIndex(x)
-		If instr(strLine,"printfooter") > 0 Then Exit For
+		If instr(strLine, EndKey) > 0 Then Exit For
 
-		objRegEx.Pattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"&chr(34)&".+$"
+		objRegEx.Pattern = URLPattern
 		Set myMatches = objRegEx.Execute(strline)
 		If myMatches.count > 0 Then
-			url2 = "http://lgqm.huiji.wiki" & myMatches(0).Submatches(0)
+			url2 = URLHead & myMatches(0).Submatches(0)
 			objRegEx.Pattern = "[\/:?*<>"&chr(34)&"|]"
 			title = objRegEx.Replace(myMatches(0).Submatches(1)," ")
 
 			DownloadURL url2
 
 			i = i + 1
-			wscript.echo "处理完成 " & Right("000" & i,4) & " - " & title
+			wscript.echo "处理完成 " & Right("000" & i,4) & " - " & titlex
+			x = x + 20
 		End If
 	Next
 	objall.WriteText "共计 " & i & " 份同人故事"
@@ -112,6 +125,7 @@ Sub DownloadEndedPart()
 
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
+	http.setRequestHeader "User-Agent", UserAgent
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
@@ -120,14 +134,15 @@ Sub DownloadEndedPart()
 	For x = 300 to UBound(aIndex)
 	'从第300行后不远才开始正文部分。
 		strLine = aIndex(x)
-		If instr(strLine,"printfooter") > 0 Then Exit For
+		If instr(strLine, EndKey) > 0 Then Exit For
 
-		objRegEx.Pattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"&chr(34)&".+$"
+		objRegEx.Pattern = URLPattern
 		Set myMatches = objRegEx.Execute(strline)
 		If myMatches.count > 0 Then
-			If aIndex(x+11) = "<p>完结" OR aIndex(x+12) = "<td>完结" _
-				OR aIndex(x+14) <> "<td>待转正" Then
-				url2 = "http://lgqm.huiji.wiki" & myMatches(0).Submatches(0)
+			If aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正" Then
+'			If aIndex(x+11) = "<p>完结" OR aIndex(x+12) = "<td>完结" _
+'				OR aIndex(x+14) <> "<td>待转正" Then
+				url2 = URLHead & myMatches(0).Submatches(0)
 				objRegEx.Pattern = "[\/:?*<>"&chr(34)&"|]"
 				title = objRegEx.Replace(myMatches(0).Submatches(1)," ")
 
@@ -135,8 +150,7 @@ Sub DownloadEndedPart()
 
 				i = i + 1
 				wscript.echo "处理完成 " & Right("000" & i,4) & " - " & title
-			Else
-				x = x +20
+				x = x + 20
 				'直接跳到20行后。第21行是一行新的网页地址
 				'如果目录页布局发生改变，这个数值可能需要修改
 			End If
