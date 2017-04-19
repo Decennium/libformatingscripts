@@ -17,7 +17,7 @@ End If
 Set objShell = CreateObject("WScript.Shell")
 objShell.CurrentDirectory = currentFolder
 
-Dim PageInfo(2)
+Public PageInfo(2)
 url = "http://www.mzitu.com/"
 
 Set http = CreateObject("Msxml2.XMLHTTP")
@@ -30,7 +30,7 @@ NextKey = "下一"
 EndURL = "/"
 UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
-PagePattern = "^.*?<li><a href="&chr(34)&"(.*?)"&chr(34)&" .*?alt='"&"(.*?)"&"'.+$"
+PagePattern = "^.+<a href="&chr(34)&"(http.*?\/\d+)"&chr(34)&" target="&chr(34)&"_blank"&chr(34)&">(.*?)<\/a>"&".+$"
 NextPagePattern = "^.*a href='"&"(http\:\/\/www.mzitu.com\/\d+\/\d+)"&"'><span>下一页.+$"
 NextMeiziPattern = "^.*a href='(.*?)'><span>下一组.+$"
 ImagePattern = "^.*?main-image.*?img src="&chr(34)&"(http.*?jpg)"&chr(34)&" alt="&chr(34)&"(.*?)"&chr(34)&".+$"
@@ -61,6 +61,7 @@ Sub GetFirstMeizi()
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
+	http.setRequestHeader "Cache-Control", "no-cache"
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
@@ -79,6 +80,7 @@ Sub GetFirstMeizi()
 			PageInfo(0) = myMatches(0).Submatches(0)
 			PageInfo(1) = myMatches(0).Submatches(1)
 			PageInfo(2) = id
+			Exit For
 		End If
 	Next
 End Sub
@@ -129,7 +131,9 @@ Sub HTTPDownload( myURL, myPath )
 	strFile = objFS.BuildPath( myPath, Mid( myURL, InStrRev( myURL, "/" ) + 1 ) )
 	If Not objFS.FileExists(strFile) Then
 		http.Open "GET", myURL, False
+		http.setRequestHeader "Accept-Encoding", "gzip"
 		http.setRequestHeader "User-Agent", UserAgent
+		http.setRequestHeader "Cache-Control", "no-cache"
 		http.Send
 		
 		with bStrm
