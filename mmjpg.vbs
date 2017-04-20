@@ -38,6 +38,9 @@ NextMeiziPattern = "^.*a href="&chr(34)&"(.+)"&chr(34)&" class=.+>下一篇.+$"
 EndPattern = "^.*没有了.+$"
 ImagePattern = "^.*?content.*?img src="&chr(34)&"(http.*?jpg)"&chr(34)&" alt="&chr(34)&"(.*?)"&chr(34)&".+$"
 
+IsUpdate = True
+CheckExistCount = 10
+ExistCount = 0
 '===
 startTime = Now()
 GetFirstMeizi
@@ -46,6 +49,7 @@ Do
 	DownloadMeizi
 	WScript.echo PageURL & " - " & PageInfo(1)
 	If PageInfo(0) = EndURL Then Exit Do
+	If IsUpdate = True And ExistCount >= CheckExistCount Then Exit Do
 	'WScript.Sleep 1000
 Loop
 EndTime = Now()
@@ -156,6 +160,9 @@ Sub HTTPDownload( myURL, myPath )
 			.savetofile strFile, 2 '//overwrite
 			.close
 		End with
+	Else
+		WScript.Echo myURL & "Is Downloaded!"
+		ExistCount = ExistCount + 1
 	End If
 End Sub
 

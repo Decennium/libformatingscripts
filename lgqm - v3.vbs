@@ -109,7 +109,7 @@ Sub DownloadAll()
 			DownloadURL url2
 
 			i = i + 1
-			wscript.echo "处理完成 " & Right("000" & i,4) & " - " & titlex
+			wscript.echo "处理完成 " & Right("000" & i,4) & " - " & title
 			x = x + 20
 		End If
 	Next
