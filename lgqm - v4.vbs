@@ -4,7 +4,7 @@
 '3 去除不必要的html标记并转码成gb2312
 '4 合并成一份文本文件
 '请使用cscript.exe执行
-'使用wscript.exe执行脚本你会不停点击确定按钮直到累死
+'使用WScript.exe执行脚本你会不停点击确定按钮直到累死
 '勿谓言之不预
 
 Set objFS = CreateObject("Scripting.FileSystemObject")
@@ -32,52 +32,25 @@ Set objRegEx = CreateObject("VBScript.RegExp")
 objRegEx.Global = True
 URLPattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"&chr(34)&">[^<]+<\/a>.*$"
 
-UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
+Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
-URLHead = "http://lgqm.huiji.wiki"
-MsgHead = "下载目录并依照目录下载网页内容，生成 "
-MsgTime = " 下载并生成完成。耗时 "
-CopyTail = " 已经复制到图书库。"
-ServerAddress = "\\192.168.3.5\NewAdded\"
+Const URLHead = "http://lgqm.huiji.wiki"
+Const MsgHead = "下载目录并依照目录下载网页内容，生成 "
+Const Msg2 = " 下载并生成完成。耗时 "
+Const CopyTail = " 已经复制到图书库。"
+Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
-EndKey = "printfooter"
+Const EndKey = "printfooter"
 
 Const dtAll = 0
 Const dtEnded = 1
 Const dtBest = 2
 '===
-startTime = Now()
-lgqm_File_Name = "临高启明wiki完整版.txt"
-Wscript.echo MsgHead & lgqm_File_Name
 DownloadAll dtAll
-EndTime = Now()
-UsedTime = DateDiff("s",StartTime,EndTime)
-
-wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
-wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
-startTime = Now()
-lgqm_File_Name = "临高启明wiki完结或已转正版本.txt"
-Wscript.echo MsgHead & lgqm_File_Name
 DownloadAll dtEnded
-EndTime = Now()
-UsedTime = DateDiff("s",StartTime,EndTime)
-
-wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
-wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
-startTime = Now()
-lgqm_File_Name = "临高启明wiki优秀版.txt"
-Wscript.echo MsgHead & lgqm_File_Name
 DownloadAll dtBest
-EndTime = Now()
-UsedTime = DateDiff("s",StartTime,EndTime)
-
-wscript.echo lgqm_File_Name & MsgTime & UsedTime & " 秒。"
-objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
-wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 '===
 objShell.Run "explorer.exe /e, " & currentFolder , 3 ,False
 
@@ -88,6 +61,17 @@ Set objFS = Nothing
 Set objRegEx = Nothing
 
 Sub DownloadAll(DownloadType)
+	startTime = Now()
+	Select Case DownloadType
+	Case dtEnded
+		lgqm_File_Name = "临高启明wiki完结或已转正版本.txt"
+	Case dtBest
+		lgqm_File_Name = "临高启明wiki优秀版.txt"
+	Case Else
+		lgqm_File_Name = "临高启明wiki完整版.txt"
+	End Select
+	WScript.echo MsgHead & lgqm_File_Name
+
 	objall.Open
 
 	http.open "GET", url, False
@@ -127,11 +111,19 @@ Sub DownloadAll(DownloadType)
 			'如果目录页布局发生改变，这个数值可能需要修改
 		End If
 	Next
+
 	objall.WriteText "共计 " & i & " 份同人故事"
 	objall.WriteText "更新时间：" & Now()
 	objall.SaveToFile currentFolder & lgqm_File_Name , 2
 
 	objall.Close
+
+	EndTime = Now()
+	UsedTime = DateDiff("s",StartTime,EndTime)
+
+	WScript.echo lgqm_File_Name & Msg2 & UsedTime & " 秒。"
+	objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
+	WScript.echo vbCrLf & lgqm_File_Name & CopyTail
 End Sub
 
 Sub DownloadURL(url, i)
@@ -155,7 +147,7 @@ Sub DownloadURL(url, i)
 		
 		objRegEx.Pattern = "(<h\d|<p|<th|</table>)"
 		If True = objRegEx.Test(ContentLine) Then
-			'wscript.echo strline
+			'WScript.echo strline
 			objRegEx.Pattern = "</h1>"
 			newline = objRegEx.Replace(ContentLine,vbCrLf)
 			objRegEx.Pattern = "<th[^>]*>"
@@ -175,9 +167,9 @@ Sub DownloadURL(url, i)
 			If Len(newline) > 0 Then
 				objall.WriteText newline,1
 			End If
-			'wscript.echo newline
+			'WScript.echo newline
 		End If
 	Next
 	objall.WriteText vbCrLf & "==EOF==" & vbCrLf,1
-	wscript.echo "处理完成 " & StoryTitle
+	WScript.echo "处理完成 " & StoryTitle
 End Sub
