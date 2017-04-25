@@ -60,7 +60,6 @@ wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 startTime = Now()
 lgqm_File_Name = "临高启明wiki完结或已转正版本.txt"
 Wscript.echo MsgHead & lgqm_File_Name
-'DownloadEndedPart
 DownloadAll dtEnded
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
@@ -72,7 +71,6 @@ wscript.echo vbCrLf & lgqm_File_Name & CopyTail
 startTime = Now()
 lgqm_File_Name = "临高启明wiki优秀版.txt"
 Wscript.echo MsgHead & lgqm_File_Name
-'DownloadBest
 DownloadAll dtBest
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
@@ -136,66 +134,6 @@ Sub DownloadAll(DownloadType)
 	objall.Close
 End Sub
 
-Sub DownloadEndedPart()
-	objall.Open
-
-	http.open "GET", url, False
-	http.setRequestHeader "Accept-Encoding", "gzip"
-	http.setRequestHeader "User-Agent", UserAgent
-	http.send
-	strIndex = http.responseText
-	aIndex = Split(strIndex, Chr(10) )
-	i = 1
-'	For Each strLine in aIndex
-	For x = 300 to UBound(aIndex)
-	'从第300行后不远才开始正文部分。
-		strLine = aIndex(x)
-		If instr(strLine, EndKey) > 0 Then Exit For
-
-		objRegEx.Pattern = URLPattern
-		Set myMatches = objRegEx.Execute(strline)
-		If myMatches.count > 0 Then
-			If aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正" Then
-'			If aIndex(x+11) = "<p>完结" OR aIndex(x+12) = "<td>完结" _
-'				OR aIndex(x+14) <> "<td>待转正" Then
-				url2 = URLHead & myMatches(0).Submatches(0)
-				DownloadURL url2, i
-				i = i + 1
-				x = x + 20
-				'直接跳到20行后。第21行是一行新的网页地址
-				'如果目录页布局发生改变，这个数值可能需要修改
-			End If
-		End If
-	Next
-	objall.WriteText "共计 " & i & " 份同人故事"
-	objall.WriteText "更新时间：" & Now()
-	objall.SaveToFile currentFolder & lgqm_File_Name , 2
-
-	objall.Close
-End Sub
-
-Sub DownloadBest()
-	objall.Open
-
-	Const FOR_READING = 1
-	Set objTS = objFS.OpenTextFile(tongren, FOR_READING)
-	i = 1
-	Do
-		url2 = objTS.Readline
-		
-		DownloadURL url2, i
-
-		i = i + 1
-	Loop until objTS.AtEndOfStream
-
-	objall.WriteText vbCrLf & "//==" & vbCrLf,1
-
-	objall.WriteText "更新时间：" & Now()
-	objall.SaveToFile currentFolder & lgqm_File_Name , 2
-
-	objall.Close
-End Sub
-
 Sub DownloadURL(url, i)
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
@@ -222,10 +160,10 @@ Sub DownloadURL(url, i)
 			newline = objRegEx.Replace(ContentLine,vbCrLf)
 			objRegEx.Pattern = "<th[^>]*>"
 			newline = objRegEx.Replace(newline,vbCrLf)
-			objRegEx.Pattern = "</th>"
-			newline = objRegEx.Replace(newline,": ")
 			objRegEx.Pattern = "</table>"
 			newline = objRegEx.Replace(newline,vbCrLf)
+			objRegEx.Pattern = "</th>"
+			newline = objRegEx.Replace(newline,": ")
 			objRegEx.Pattern = "<[^>]+>"
 			newline = objRegEx.Replace(newline,"")
 			objRegEx.Pattern = "^ +"
