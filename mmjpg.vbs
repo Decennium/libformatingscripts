@@ -8,7 +8,7 @@
 Set objFS = CreateObject("Scripting.FileSystemObject")
 Set bStrm = createobject("Adodb.Stream")
 
-currentFolder = "E:\Temp\mmjpg\"
+currentFolder = "D:\Temp\mmjpg\"
 '这个文件夹可以随意更改
 If Not objFS.FolderExists(currentFolder) Then 
 	objFS.CreateFolder currentFolder
@@ -161,7 +161,7 @@ Sub HTTPDownload( myURL, myPath )
 			.close
 		End with
 	Else
-		WScript.Echo myURL & "Is Downloaded!"
+		WScript.Echo myURL & " is Downloaded!"
 		ExistCount = ExistCount + 1
 	End If
 End Sub

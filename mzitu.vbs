@@ -66,6 +66,7 @@ Sub GetFirstMeizi()
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
 	http.setRequestHeader "Cache-Control", "no-cache"
+	http.setRequestHeader "referer", url
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
@@ -93,6 +94,9 @@ Sub DownloadMeizi()
 	url = PageInfo(0)
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
+	http.setRequestHeader "User-Agent", UserAgent
+	http.setRequestHeader "Cache-Control", "no-cache"
+	http.setRequestHeader "referer", url
 	http.send
 	strContent = http.responseText
 	aContent = Split(strContent, Chr(10) )
@@ -123,12 +127,13 @@ Sub DownloadMeizi()
 			image_url = myMatches(0).Submatches(0)
 			PageInfo(1) = myMatches(0).Submatches(1)
 			id = PageInfo(2)
-			HTTPDownload image_url, currentFolder & id
+			HTTPDownload url, image_url, currentFolder & id
 		End If
+		WScript.Sleep 2000
 	Next
 End Sub
 
-Sub HTTPDownload( myURL, myPath )
+Sub HTTPDownload(url, myURL, myPath )
 	on error resume next
 	Dim strFile
 	CreateMultiLevelFolder myPath
@@ -138,6 +143,7 @@ Sub HTTPDownload( myURL, myPath )
 		http.setRequestHeader "Accept-Encoding", "gzip"
 		http.setRequestHeader "User-Agent", UserAgent
 		http.setRequestHeader "Cache-Control", "no-cache"
+		http.setRequestHeader "referer", url
 		http.Send
 		
 		with bStrm

@@ -9,21 +9,22 @@
 
 Set objFS = CreateObject("Scripting.FileSystemObject")
 
-currentFolder = "E:\Temp\lgqm\"
+currentFolder = "D:\Temp\lgqm\"
 '这个文件夹可以随意更改
 If Not objFS.FolderExists(currentFolder) Then 
 	objFS.CreateFolder currentFolder
 End If
 
 url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
-tongren = "E:\lgqm-best.txt"
 
 Set objall = CreateObject("ADODB.Stream")
 objall.Charset = "gb2312"
 objall.Type = 2
 objall.LineSeparator = -1      'CRLF
 
-Set http = CreateObject("Msxml2.XMLHTTP")
+'Set http = CreateObject("Msxml2.XMLHTTP")
+Set http = CreateObject("Msxml2.XMLHttp.6.0")
+'Set http = CreateObject("Msxml2.ServerXMLHttp.6.0")
 
 Set objShell = CreateObject("WScript.Shell")
 objShell.CurrentDirectory = currentFolder
@@ -37,6 +38,7 @@ Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko
 Const URLHead = "http://lgqm.huiji.wiki"
 Const MsgHead = "下载目录并依照目录下载网页内容，生成 "
 Const Msg2 = " 下载并生成完成。耗时 "
+Const FailedMsg = " 下载失败。"
 Const CopyTail = " 已经复制到图书库。"
 Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
@@ -80,6 +82,11 @@ Sub DownloadAll(DownloadType)
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
+	If UBound(aIndex)<10 Then
+		WScript.Echo lgqm_File_Name & FailedMsg
+		objall.Close
+		Exit Sub
+	End If
 	i = 1
 '	For Each strLine in aIndex
 	For x = 300 to UBound(aIndex)
@@ -112,7 +119,7 @@ Sub DownloadAll(DownloadType)
 		End If
 	Next
 
-	objall.WriteText "共计 " & i & " 份同人故事"
+	objall.WriteText "共计 " & i & " 份同人故事" & vbCrLf
 	objall.WriteText "更新时间：" & Now()
 	objall.SaveToFile currentFolder & lgqm_File_Name , 2
 
@@ -123,28 +130,36 @@ Sub DownloadAll(DownloadType)
 
 	WScript.echo lgqm_File_Name & Msg2 & UsedTime & " 秒。"
 	objFS.CopyFile currentFolder & lgqm_File_Name , ServerAddress ,True
-	WScript.echo vbCrLf & lgqm_File_Name & CopyTail
+	WScript.echo vbCrLf & lgqm_File_Name & CopyTail & vbCrLf
 End Sub
 
 Sub DownloadURL(url, i)
+on error resume next
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
+	http.setRequestHeader "User-Agent", UserAgent
 	http.send
 	strContent = http.responseText
 	aContent = Split(strContent, Chr(10) )
+	If UBound(aContent)<10 Then
+		WScript.Echo url & FailedMsg
+		objall.Close
+		Exit Sub
+	End If
 	'For Each ContentLine in aContent
 	For y = 270 to UBound(aContent)
 	'从第270行后不远才开始正文部分。
 		ContentLine = aContent(y)
-		If instr(ContentLine,"printfooter") > 0 Then Exit For
+		If instr(ContentLine, EndKey) > 0 Then Exit For
 
 		objRegEx.Pattern = "<h1>(.*?)<\/h1>"
 		Set myMatches = objRegEx.Execute(ContentLine)
-		If myMatches.count > 0 Then title = myMatches(0).Submatches(0)
-		StoryTitle = "第" & Right("000" & i,4) & "篇" & " - " & title
-		objall.WriteText StoryTitle
-		objall.WriteText vbCrLf
-		
+		If myMatches.count > 0 Then
+			title = myMatches(0).Submatches(0)
+			StoryTitle = "第" & Right("000" & i,4) & "篇" & " - " & title
+			objall.WriteText StoryTitle
+			objall.WriteText vbCrLf
+		End If
 		objRegEx.Pattern = "(<h\d|<p|<th|</table>)"
 		If True = objRegEx.Test(ContentLine) Then
 			'WScript.echo strline
