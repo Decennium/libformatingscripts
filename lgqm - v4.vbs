@@ -118,13 +118,13 @@ Sub DownloadAll(DownloadType)
 			'如果目录页布局发生改变，这个数值可能需要修改
 		End If
 	Next
+	If objall.State = 1 Then
+		objall.WriteText "共计 " & i & " 份同人故事" & vbCrLf
+		objall.WriteText "更新时间：" & Now()
+		objall.SaveToFile currentFolder & lgqm_File_Name , 2
 
-	objall.WriteText "共计 " & i & " 份同人故事" & vbCrLf
-	objall.WriteText "更新时间：" & Now()
-	objall.SaveToFile currentFolder & lgqm_File_Name , 2
-
-	objall.Close
-
+		objall.Close
+	End If
 	EndTime = Now()
 	UsedTime = DateDiff("s",StartTime,EndTime)
 
