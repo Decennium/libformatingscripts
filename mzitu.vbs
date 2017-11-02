@@ -8,7 +8,7 @@
 Set objFS = CreateObject("Scripting.FileSystemObject")
 Set bStrm = createobject("Adodb.Stream")
 
-currentFolder = "E:\Temp\mzitu\"
+currentFolder = "D:\Temp\mzitu\"
 '这个文件夹可以随意更改
 If Not objFS.FolderExists(currentFolder) Then 
 	objFS.CreateFolder currentFolder
@@ -20,7 +20,8 @@ objShell.CurrentDirectory = currentFolder
 Public PageInfo(2)
 url = "http://www.mzitu.com/"
 
-Set http = CreateObject("Msxml2.XMLHTTP")
+'Set http = CreateObject("Msxml2.XMLHTTP")
+Set http = CreateObject("Msxml2.XMLHttp.6.0")
 
 Set objRegEx = CreateObject("VBScript.RegExp")
 objRegEx.Global = True
@@ -28,8 +29,9 @@ objRegEx.Global = True
 HomeEndKey = "navigation pagination"
 NextKey = "下一"
 EndURL = "/"
-UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
-
+UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
+cookie = "Hm_lvt_dbc355aef238b6c32b43eacbbf161c3c=1509168374; Hm_lpvt_dbc355aef238b6c32b43eacbbf161c3c=1509168521"
+Head_Accept = "*/*"
 PagePattern = "^.+<a href="&chr(34)&"(http.*?\/\d+)"&chr(34)&" target="&chr(34)&"_blank"&chr(34)&">(.*?)<\/a>"&".+$"
 NextPagePattern = "^.*a href='"&"(http\:\/\/www.mzitu.com\/\d+\/\d+)"&"'><span>下一页.+$"
 NextMeiziPattern = "^.*a href='(.*?)'><span>下一组.+$"
@@ -43,8 +45,8 @@ startTime = Now()
 GetFirstMeizi
 Do
 	PageURL = PageInfo(0)
-	DownloadMeizi
 	WScript.echo PageURL & " - " & PageInfo(1)
+	DownloadMeizi
 	If PageInfo(0) = EndURL Then Exit Do
 	If IsUpdate = True And ExistCount >= CheckExistCount Then Exit Do
 	'WScript.Sleep 1000
@@ -63,10 +65,16 @@ Set objRegEx = Nothing
 
 Sub GetFirstMeizi()
 	http.open "GET", url, False
-	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
-	http.setRequestHeader "Cache-Control", "no-cache"
 	http.setRequestHeader "referer", url
+'	http.setRequestHeader "cookie", cookie
+	http.setRequestHeader "Host", "i.meizitu.net"
+	http.setRequestHeader "Pragma", "no-cache"
+	http.setRequestHeader "Accept-Encoding", "gzip, deflate"
+	http.setRequestHeader "Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6"
+	http.setRequestHeader "Cache-Control", "no-cache"
+	http.setRequestHeader "Connection", "keep-alive"
+	http.setRequestHeader "Accept", Head_Accept
 	http.send
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
@@ -93,10 +101,16 @@ End Sub
 Sub DownloadMeizi()
 	url = PageInfo(0)
 	http.open "GET", url, False
-	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
-	http.setRequestHeader "Cache-Control", "no-cache"
 	http.setRequestHeader "referer", url
+'	http.setRequestHeader "cookie", cookie
+	http.setRequestHeader "Host", "i.meizitu.net"
+	http.setRequestHeader "Pragma", "no-cache"
+	http.setRequestHeader "Accept-Encoding", "gzip, deflate"
+	http.setRequestHeader "Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6"
+	http.setRequestHeader "Cache-Control", "no-cache"
+	http.setRequestHeader "Connection", "keep-alive"
+	http.setRequestHeader "Accept", Head_Accept
 	http.send
 	strContent = http.responseText
 	aContent = Split(strContent, Chr(10) )
@@ -129,7 +143,7 @@ Sub DownloadMeizi()
 			id = PageInfo(2)
 			HTTPDownload url, image_url, currentFolder & id
 		End If
-		WScript.Sleep 2000
+'		WScript.Sleep 2000
 	Next
 End Sub
 
@@ -140,12 +154,21 @@ Sub HTTPDownload(url, myURL, myPath )
 	strFile = objFS.BuildPath( myPath, Mid( myURL, InStrRev( myURL, "/" ) + 1 ) )
 	If Not objFS.FileExists(strFile) Then
 		http.Open "GET", myURL, False
-		http.setRequestHeader "Accept-Encoding", "gzip"
 		http.setRequestHeader "User-Agent", UserAgent
-		http.setRequestHeader "Cache-Control", "no-cache"
 		http.setRequestHeader "referer", url
+'		http.setRequestHeader "cookie", cookie
+		http.setRequestHeader "Host", "i.meizitu.net"
+'		http.setRequestHeader "Pragma", "no-cache"
+		http.setRequestHeader "Accept-Encoding", "gzip, deflate"
+		http.setRequestHeader "Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6"
+		http.setRequestHeader "Cache-Control", "max-age=0"
+		http.setRequestHeader "Connection", "keep-alive"
+		http.setRequestHeader "Proxy-Connection", "keep-alive"
+		http.setRequestHeader "Upgrade-Insecure-Requests", "1"
+		http.setRequestHeader "Accept", Head_Accept
+
 		http.Send
-		
+'		WScript.Sleep 2000
 		with bStrm
 			.type = 1 '//binary
 			.open
@@ -153,8 +176,9 @@ Sub HTTPDownload(url, myURL, myPath )
 			.savetofile strFile, 2 '//overwrite
 			.close
 		End with
+		WScript.Echo url & " - " & myURL & " Is Downloaded!"
 	Else
-		WScript.Echo myURL & "Is Downloaded!"
+		WScript.Echo myURL & " Exist!"
 		ExistCount = ExistCount + 1
 	End If
 End Sub
