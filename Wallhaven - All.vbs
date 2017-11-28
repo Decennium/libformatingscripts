@@ -25,7 +25,6 @@ For i = 1 to picLastest
 	picurl = picBaseURL & i & ".jpg"
 	picfile = HTTPDownload(picurl, currentFolder)
 	WScript.Echo picurl
-	WScript.Sleep 2000
 	
 Next
 
@@ -47,6 +46,7 @@ Function HTTPDownload(myURL, myPath)
 			.savetofile strFile, 2 '//overwrite
 			.close
 		End with
+		WScript.Sleep 2000
 	End If
 	HTTPDownload = strFile
 End Function
