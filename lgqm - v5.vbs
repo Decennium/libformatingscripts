@@ -6,11 +6,12 @@
 '请使用cscript.exe执行
 '使用WScript.exe执行脚本你会不停点击确定按钮直到累死
 '勿谓言之不预
-
+Const ForReading = 1
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 BaseFolder = "D:\Temp\lgqm_wiki\"
 TempFolder = BaseFolder & "txt\"
+DownloadTampFile = "update.log"
 '这个文件夹可以随意更改
 If Not objFSO.FolderExists(TempFolder) Then 
 	CreateMultiLevelFolder TempFolder
@@ -74,6 +75,7 @@ For iDLDType = dtAll to dtClosed
 	End If
 	On Error goto 0
 Next
+WriteDownloadTime
 objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
 
 Set http = Nothing
@@ -103,21 +105,27 @@ Sub DownloadAll(DownloadType)
 		Set myMatches = objRegEx.Execute(strline)
 		If myMatches.count > 0 Then
 			url2 = URLHead & myMatches(0).Submatches(0)
-			Select Case DownloadType
-			Case dtClosed
+
+			UpdateTime = CDate(Mid(aIndex(x+10),5,10))
+			DownloadTamp = ReadDownloadTime()
+			
+			TargetFile = TempFolder & FileHead(dtAll) & Right("000" & i,4) & ".TXT"
+			BestFile = TempFolder & FileHead(dtBest) & Right("000" & i,4) & ".TXT"
+			ClosedFile = TempFolder & FileHead(dtClosed) & Right("000" & i,4) & ".TXT"
+			
+			If DateDiff("d",UpdateTime, DownloadTamp)<0 OR NOT objFSO.FileExists(TargetFile) Then
+				DownloadedFile = DownloadURL(url2, i, dtAll)
+			End If
+			If objFSO.FileExists(DownloadedFile) Then
 				If (aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正") Then
-					DownloadURL url2, i, DownloadType
-					i = i + 1
+					objFSO.CopyFile DownloadedFile, ClosedFile
 				End If
-			Case dtBest
+
 				If (InStr(aIndex(x+18), "铁拳爆菊大出血杯")>0) Then
-					DownloadURL url2, i, DownloadType
-					i = i + 1
+					objFSO.CopyFile DownloadedFile, BestFile
 				End If
-			Case dtAll
-				DownloadURL url2, i, DownloadType
-				i = i + 1
-			End Select
+			End If
+			i = i + 1
 			x = x + 20
 			'直接跳到20行后。第21行是一行新的网页地址
 			'如果目录页布局发生改变，这个数值可能需要修改
@@ -125,7 +133,7 @@ Sub DownloadAll(DownloadType)
 	Next
 End Sub
 
-Sub DownloadURL(url, i, DownloadType)
+Function DownloadURL(url, i, DownloadType)
 	File_Head = FileHead(DownloadType)
 
 	Set objONE = CreateObject("ADODB.Stream")
@@ -144,7 +152,7 @@ Sub DownloadURL(url, i, DownloadType)
 	If UBound(aContent)<10 Then
 		WScript.Echo url & MsgFailed
 		objONE.Close
-		Exit Sub
+		Exit Function
 	End If
 	'For Each ContentLine in aContent
 	For y = 270 to UBound(aContent)
@@ -179,11 +187,15 @@ Sub DownloadURL(url, i, DownloadType)
 	Next
 	'objONE.WriteText vbCrLf & "==EOF==" & vbCrLf,1
 	If objONE.State = 1 Then
-		objONE.SaveToFile TempFolder & File_Head & Right("000" & i,4) & ".TXT" , 2
+		FullFileName = TempFolder & File_Head & Right("000" & i,4) & ".TXT"
+		objONE.SaveToFile FullFileName , 2
 		objONE.Close
+	Else
+		FullFileName= ""
 	End If
+	DownloadURL = FullFileName
 	WScript.echo "处理完成 " & StoryTitle
-End Sub
+End Function
 
 Sub EmergeAll(DownloadType)
 	File_Head = FileHead(DownloadType)
@@ -215,3 +227,20 @@ Sub CreateMultiLevelFolder(strPath)
 	End If 
 	objFSO.CreateFolder strPath
 End Sub
+
+Sub WriteDownloadTime()
+	Set objTampFile = objFSO.CreateTextFile(BaseFolder & DownloadTampFile)
+	objTampFile.WriteLine Date()
+	objTampFile.Close
+End Sub
+
+Function ReadDownloadTime()
+	Set objTampFile = objFSO.OpenTextFile(BaseFolder & DownloadTampFile, ForReading, True)
+	If Not objTampFile.AtEndOfStream Then
+		strText = objTampFile.ReadLine
+	End If
+	objTampFile.Close
+	If Trim(strText) = "" Then strText = "1970-01-01"
+	ReadDownloadTime = CDate(strText)
+End Function
+
