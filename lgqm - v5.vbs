@@ -11,13 +11,13 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 BaseFolder = "D:\Temp\lgqm_wiki\"
 TempFolder = BaseFolder & "txt\"
-DownloadTampFile = "update.log"
+Const DownloadTampFile = "update.log"
 '这个文件夹可以随意更改
 If Not objFSO.FolderExists(TempFolder) Then 
 	CreateMultiLevelFolder TempFolder
 End If
 
-url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
+Const url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
 
 'Set http = CreateObject("Msxml2.XMLHTTP")
 Set http = CreateObject("Msxml2.XMLHttp.6.0")
@@ -44,14 +44,21 @@ Const EndKey = "printfooter"
 Const dtAll = 0
 Const dtBest = 1
 Const dtClosed = 2
-Dim FileHead(3)
+
+Public FileHead(3)
 FileHead(dtAll) = "ALL_"
 FileHead(dtBest) = "BEST"
 FileHead(dtClosed) = "CLOS"
-Dim FileEmergeName(3)
+
+Public FileEmergeName(3)
 FileEmergeName(dtAll) = "临高启明wiki完整版.txt"
 FileEmergeName(dtBest) = "临高启明wiki优秀版.txt"
 FileEmergeName(dtClosed) = "临高启明wiki完结或已转正版本.txt"
+
+Public HaveUpdate(3)
+HaveUpdate(dtAll) = False
+HaveUpdate(dtBest) = False
+HaveUpdate(dtClosed) = False
 '===
 For iDLDType = dtAll to dtClosed
 	startTime = Now()
@@ -65,15 +72,17 @@ For iDLDType = dtAll to dtClosed
 	UsedTime = DateDiff("s",StartTime,EndTime)
 
 	WScript.echo lgqm_File_Name & MsgEnd & UsedTime & " 秒。"
-	On Error resume next
-	objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
-	If Err.Number Then
-		WScript.Echo Err.Number & " Srce: " & Err.Source & " Desc: " &  Err.Description
-		Err.Clear
-	Else
-		WScript.echo vbCrLf & lgqm_File_Name & MsgCopy & vbCrLf
+	If HaveUpdate(iDLDType) Then
+		On Error resume next
+		objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
+		If Err.Number Then
+			WScript.Echo Err.Number & " Srce: " & Err.Source & " Desc: " &  Err.Description
+			Err.Clear
+		Else
+			WScript.echo vbCrLf & lgqm_File_Name & MsgCopy & vbCrLf
+		End If
+		On Error goto 0
 	End If
-	On Error goto 0
 Next
 WriteDownloadTime
 objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
@@ -82,6 +91,8 @@ Set http = Nothing
 Set objShell = Nothing
 Set objFSO = Nothing
 Set objRegEx = Nothing
+
+WScript.Quit
 
 Sub DownloadAll(DownloadType)
 	http.open "GET", url, False
@@ -115,14 +126,18 @@ Sub DownloadAll(DownloadType)
 			
 			If DateDiff("d",UpdateTime, DownloadTamp)<0 OR NOT objFSO.FileExists(TargetFile) Then
 				DownloadedFile = DownloadURL(url2, i, dtAll)
+				HaveUpdate(dtAll) = True
+			Else
+				WScript.Echo myMatches(0).Submatches(1) & " 已经更新，跳过！"
 			End If
 			If objFSO.FileExists(DownloadedFile) Then
-				If (aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正") Then
-					objFSO.CopyFile DownloadedFile, ClosedFile
-				End If
-
 				If (InStr(aIndex(x+18), "铁拳爆菊大出血杯")>0) Then
 					objFSO.CopyFile DownloadedFile, BestFile
+					HaveUpdate(dtBest) = True
+				End If
+				If (aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正") Then
+					objFSO.CopyFile DownloadedFile, ClosedFile
+					HaveUpdate(dtClosed) = True
 				End If
 			End If
 			i = i + 1
@@ -198,6 +213,8 @@ Function DownloadURL(url, i, DownloadType)
 End Function
 
 Sub EmergeAll(DownloadType)
+	If Not HaveUpdate(DownloadType) Then Exit Sub
+
 	File_Head = FileHead(DownloadType)
 
 	Const ForReading = 1
