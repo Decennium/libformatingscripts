@@ -15,6 +15,7 @@ TempFolder = BaseFolder & "txt\"
 If Not objFSO.FolderExists(TempFolder) Then 
 	CreateMultiLevelFolder TempFolder
 End If
+HaveNewFile = False
 
 url = "http://www.ranwena.com/files/article/0/996/index.html"
 
@@ -34,9 +35,10 @@ Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko
 
 Const URLHead = "http://www.ranwena.com/files/article/0/996/"
 Const MsgHead = "下载目录并依照目录下载网页内容，生成 "
-Const Msg2 = " 下载并生成完成。耗时 "
-Const FailedMsg = " 下载失败。"
-Const CopyTail = " 已经复制到图书库。"
+Const MsgDone = " 下载并生成完成。耗时 "
+Const MsgFailed = " 下载失败。"
+Const MsgCopy = " 已经复制到图书库。"
+Const MsgNoUpdate = " 没有更新，不做合并，不做复制。"
 Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
 Const EndKey = "footer"
@@ -49,17 +51,20 @@ WScript.echo MsgHead & lgqm_File_Name
 
 DownloadAll
 
-EmergeAll
+If HaveNewFile Then EmergeAll
 
 EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
-WScript.echo lgqm_File_Name & Msg2 & UsedTime & " 秒。"
-objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
-WScript.echo vbCrLf & lgqm_File_Name & CopyTail & vbCrLf
-
+If HaveNewFile Then
+	WScript.echo lgqm_File_Name & MsgDone & UsedTime & " 秒。"
+	objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
+	WScript.echo vbCrLf & lgqm_File_Name & MsgCopy & vbCrLf
+	objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
+Else
+	WScript.echo vbCrLf & lgqm_File_Name & MsgNoUpdate & vbCrLf
+End If
 '===
-objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
 
 Set http = Nothing
 Set objShell = Nothing
@@ -76,7 +81,7 @@ Sub DownloadAll()
 	
 	aIndex = Split(strIndex, vbCrlf )
 	If UBound(aIndex)<10 Then
-		WScript.Echo lgqm_File_Name & FailedMsg
+		WScript.Echo lgqm_File_Name & MsgFailed
 		objall.Close
 		Exit Sub
 	End If
@@ -94,6 +99,7 @@ Sub DownloadAll()
 			StoryTitle = myMatches(0).Submatches(1)
 			If Not(objFSO.FileExists(TempFolder & Right("000" & i,4) & ".TXT")) Then 
 				DownloadURL url2, i
+				HaveNewFile = True
 				WScript.echo StoryTitle & " 处理完成"
 				WScript.Sleep 2000
 			Else
@@ -121,7 +127,7 @@ Sub DownloadURL(url, i)
 	aContent = Split(strContent, chr(9))
 	'WScript.Echo UBound(aContent)
 	If UBound(aContent)<10 Then
-		WScript.Echo url & FailedMsg
+		WScript.Echo url & MsgFailed
 		objONE.Close
 		Exit Sub
 	End If

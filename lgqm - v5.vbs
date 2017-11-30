@@ -37,6 +37,7 @@ Const MsgStart = "开始下载目录并依照目录下载网页内容，生成 "
 Const MsgEnd = " 下载并生成完成。耗时 "
 Const MsgFailed = " 下载失败。"
 Const MsgCopy = " 已经复制到图书库。"
+Const MsgNoUpdate = " 没有更新，不做合并，不做复制。"
 Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
 Const EndKey = "printfooter"
@@ -66,7 +67,7 @@ For iDLDType = dtAll to dtClosed
 	lgqm_File_Name = FileEmergeName(iDLDType)
 	WScript.echo MsgStart & lgqm_File_Name
 	DownloadAll iDLDType
-	EmergeAll iDLDType
+	If HaveUpdate(iDLDType) Then EmergeAll(iDLDType)
 
 	EndTime = Now()
 	UsedTime = DateDiff("s",StartTime,EndTime)
@@ -76,12 +77,14 @@ For iDLDType = dtAll to dtClosed
 		On Error resume next
 		objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
 		If Err.Number Then
-			WScript.Echo Err.Number & " Srce: " & Err.Source & " Desc: " &  Err.Description
+			WScript.Echo Err.Number & " Srce: " & Err.Source & " Desc: " & Err.Description
 			Err.Clear
 		Else
 			WScript.echo vbCrLf & lgqm_File_Name & MsgCopy & vbCrLf
 		End If
 		On Error goto 0
+	Else
+		WScript.echo vbCrLf & lgqm_File_Name & MsgNoUpdate & vbCrLf
 	End If
 Next
 WriteDownloadTime
