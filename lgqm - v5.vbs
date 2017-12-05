@@ -1,25 +1,24 @@
-'è¿™ä»½è„šæœ¬ï¼š
-'1 ä¸‹è½½ç°æœºwikiä¸Šçš„ä¸´é«˜å¯æ˜åŒäººç›®å½•
-'2 æ ¹æ®ç›®å½•ä¸‹è½½æ‰€æœ‰åŒäººå°è¯´
-'3 å»é™¤ä¸å¿…è¦çš„htmlæ ‡è®°å¹¶è½¬ç æˆgb2312
-'4 åˆå¹¶æˆä¸€ä»½æ–‡æœ¬æ–‡ä»¶
-'è¯·ä½¿ç”¨cscript.exeæ‰§è¡Œ
-'ä½¿ç”¨WScript.exeæ‰§è¡Œè„šæœ¬ä½ ä¼šä¸åœç‚¹å‡»ç¡®å®šæŒ‰é’®ç›´åˆ°ç´¯æ­»
-'å‹¿è°“è¨€ä¹‹ä¸é¢„
+'Õâ·İ½Å±¾£º
+'1 ÏÂÔØ»Ò»úwikiÉÏµÄÁÙ¸ßÆôÃ÷Í¬ÈËÄ¿Â¼
+'2 ¸ù¾İÄ¿Â¼ÏÂÔØËùÓĞÍ¬ÈËĞ¡Ëµ
+'3 È¥³ı²»±ØÒªµÄhtml±ê¼Ç²¢×ªÂë³Égb2312
+'4 ºÏ²¢³ÉÒ»·İÎÄ±¾ÎÄ¼ş
+'ÇëÊ¹ÓÃcscript.exeÖ´ĞĞ
+'Ê¹ÓÃWScript.exeÖ´ĞĞ½Å±¾Äã»á²»Í£µã»÷È·¶¨°´Å¥Ö±µ½ÀÛËÀ
+'ÎğÎ½ÑÔÖ®²»Ô¤
 Const ForReading = 1
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 BaseFolder = "D:\Temp\lgqm_wiki\"
 TempFolder = BaseFolder & "txt\"
 Const DownloadTampFile = "update.log"
-'è¿™ä¸ªæ–‡ä»¶å¤¹å¯ä»¥éšæ„æ›´æ”¹
+'Õâ¸öÎÄ¼ş¼Ğ¿ÉÒÔËæÒâ¸ü¸Ä
 If Not objFSO.FolderExists(TempFolder) Then 
 	CreateMultiLevelFolder TempFolder
 End If
 
 Const url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
 
-'Set http = CreateObject("Msxml2.XMLHTTP")
 Set http = CreateObject("Msxml2.XMLHttp.6.0")
 'Set http = CreateObject("Msxml2.ServerXMLHttp.6.0")
 
@@ -33,11 +32,11 @@ URLPattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"
 Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
 Const URLHead = "http://lgqm.huiji.wiki"
-Const MsgStart = "å¼€å§‹ä¸‹è½½ç›®å½•å¹¶ä¾ç…§ç›®å½•ä¸‹è½½ç½‘é¡µå†…å®¹ï¼Œç”Ÿæˆ "
-Const MsgEnd = " ä¸‹è½½å¹¶ç”Ÿæˆå®Œæˆã€‚è€—æ—¶ "
-Const MsgFailed = " ä¸‹è½½å¤±è´¥ã€‚"
-Const MsgCopy = " å·²ç»å¤åˆ¶åˆ°å›¾ä¹¦åº“ã€‚"
-Const MsgNoUpdate = " æ²¡æœ‰æ›´æ–°ï¼Œä¸åšåˆå¹¶ï¼Œä¸åšå¤åˆ¶ã€‚"
+Const MsgStart = "¿ªÊ¼ÏÂÔØÄ¿Â¼²¢ÒÀÕÕÄ¿Â¼ÏÂÔØÍøÒ³ÄÚÈİ£¬Éú³É "
+Const MsgEnd = " ÏÂÔØ²¢Éú³ÉÍê³É¡£ºÄÊ± "
+Const MsgFailed = " ÏÂÔØÊ§°Ü¡£"
+Const MsgCopy = " ÒÑ¾­¸´ÖÆµ½Í¼Êé¿â¡£"
+Const MsgNoUpdate = " Ã»ÓĞ¸üĞÂ£¬²»×öºÏ²¢£¬²»×ö¸´ÖÆ¡£"
 Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
 Const EndKey = "printfooter"
@@ -52,9 +51,9 @@ FileHead(dtBest) = "BEST"
 FileHead(dtClosed) = "CLOS"
 
 Public FileEmergeName(3)
-FileEmergeName(dtAll) = "ä¸´é«˜å¯æ˜wikiå®Œæ•´ç‰ˆ.txt"
-FileEmergeName(dtBest) = "ä¸´é«˜å¯æ˜wikiä¼˜ç§€ç‰ˆ.txt"
-FileEmergeName(dtClosed) = "ä¸´é«˜å¯æ˜wikiå®Œç»“æˆ–å·²è½¬æ­£ç‰ˆæœ¬.txt"
+FileEmergeName(dtAll) = "ÁÙ¸ßÆôÃ÷wikiÍêÕû°æ.txt"
+FileEmergeName(dtBest) = "ÁÙ¸ßÆôÃ÷wikiÓÅĞã°æ.txt"
+FileEmergeName(dtClosed) = "ÁÙ¸ßÆôÃ÷wikiÍê½á»òÒÑ×ªÕı°æ±¾.txt"
 
 Public HaveUpdate(3)
 HaveUpdate(dtAll) = False
@@ -72,7 +71,7 @@ For iDLDType = dtAll to dtClosed
 	EndTime = Now()
 	UsedTime = DateDiff("s",StartTime,EndTime)
 
-	WScript.echo lgqm_File_Name & MsgEnd & UsedTime & " ç§’ã€‚"
+	WScript.echo lgqm_File_Name & MsgEnd & UsedTime & " Ãë¡£"
 	If HaveUpdate(iDLDType) Then
 		On Error resume next
 		objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
@@ -98,10 +97,18 @@ Set objRegEx = Nothing
 WScript.Quit
 
 Sub DownloadAll(DownloadType)
+	On Error Resume Next
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
 	http.send
+	If Err.Number > 0 Then
+		WScript.Echo Err.Number & " Src: " & Err.Source & " Desc: " & Err.Description
+		Err.Clear
+		Exit Sub
+	End If
+	On Error goto 0
+
 	strIndex = http.responseText
 	aIndex = Split(strIndex, Chr(10) )
 	If UBound(aIndex)<10 Then
@@ -111,7 +118,7 @@ Sub DownloadAll(DownloadType)
 	i = 1
 '	For Each strLine in aIndex
 	For x = 300 to UBound(aIndex)
-	'ä»ç¬¬300è¡Œåä¸è¿œæ‰å¼€å§‹æ­£æ–‡éƒ¨åˆ†ã€‚
+	'´ÓµÚ300ĞĞºó²»Ô¶²Å¿ªÊ¼ÕıÎÄ²¿·Ö¡£
 		strLine = aIndex(x)
 		If instr(strLine, EndKey) > 0 Then Exit For
 
@@ -131,22 +138,22 @@ Sub DownloadAll(DownloadType)
 				DownloadedFile = DownloadURL(url2, i, dtAll)
 				HaveUpdate(dtAll) = True
 			Else
-				WScript.Echo myMatches(0).Submatches(1) & " å·²ç»æ›´æ–°ï¼Œè·³è¿‡ï¼"
+				WScript.Echo myMatches(0).Submatches(1) & " ÒÑ¾­¸üĞÂ£¬Ìø¹ı£¡"
 			End If
 			If objFSO.FileExists(DownloadedFile) Then
-				If (InStr(aIndex(x+18), "é“æ‹³çˆ†èŠå¤§å‡ºè¡€æ¯")>0) Then
+				If (InStr(aIndex(x+18), "ÌúÈ­±¬¾Õ´ó³öÑª±­")>0) Then
 					objFSO.CopyFile DownloadedFile, BestFile
 					HaveUpdate(dtBest) = True
 				End If
-				If (aIndex(x+12) = "<td>å®Œç»“" OR aIndex(x+14) <> "<td>å¾…è½¬æ­£") Then
+				If (aIndex(x+12) = "<td>Íê½á" OR aIndex(x+14) <> "<td>´ı×ªÕı") Then
 					objFSO.CopyFile DownloadedFile, ClosedFile
 					HaveUpdate(dtClosed) = True
 				End If
 			End If
 			i = i + 1
 			x = x + 20
-			'ç›´æ¥è·³åˆ°20è¡Œåã€‚ç¬¬21è¡Œæ˜¯ä¸€è¡Œæ–°çš„ç½‘é¡µåœ°å€
-			'å¦‚æœç›®å½•é¡µå¸ƒå±€å‘ç”Ÿæ”¹å˜ï¼Œè¿™ä¸ªæ•°å€¼å¯èƒ½éœ€è¦ä¿®æ”¹
+			'Ö±½ÓÌøµ½20ĞĞºó¡£µÚ21ĞĞÊÇÒ»ĞĞĞÂµÄÍøÒ³µØÖ·
+			'Èç¹ûÄ¿Â¼Ò³²¼¾Ö·¢Éú¸Ä±ä£¬Õâ¸öÊıÖµ¿ÉÄÜĞèÒªĞŞ¸Ä
 		End If
 	Next
 End Sub
@@ -165,6 +172,14 @@ Function DownloadURL(url, i, DownloadType)
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
 	http.send
+	If Err.Number > 0 Then
+		WScript.Echo Err.Number & " Src: " & Err.Source & " Desc: " & Err.Description
+		Err.Clear
+		objONE.Close
+		Exit Function
+	End If
+	On Error goto 0
+
 	strContent = http.responseText
 	aContent = Split(strContent, Chr(10) )
 	If UBound(aContent)<10 Then
@@ -174,7 +189,7 @@ Function DownloadURL(url, i, DownloadType)
 	End If
 	'For Each ContentLine in aContent
 	For y = 270 to UBound(aContent)
-	'ä»ç¬¬270è¡Œåä¸è¿œæ‰å¼€å§‹æ­£æ–‡éƒ¨åˆ†ã€‚
+	'´ÓµÚ270ĞĞºó²»Ô¶²Å¿ªÊ¼ÕıÎÄ²¿·Ö¡£
 		ContentLine = aContent(y)
 		If instr(ContentLine, EndKey) > 0 Then Exit For
 
@@ -182,7 +197,7 @@ Function DownloadURL(url, i, DownloadType)
 		Set myMatches = objRegEx.Execute(ContentLine)
 		If myMatches.count > 0 Then
 			title = myMatches(0).Submatches(0)
-			StoryTitle = "ç¬¬" & Right("000" & i,4) & "ç¯‡" & " - " & title
+			StoryTitle = "µÚ" & Right("000" & i,4) & "Æª" & " - " & title
 			objONE.WriteText StoryTitle
 			objONE.WriteText vbCrLf
 		End If
@@ -195,7 +210,7 @@ Function DownloadURL(url, i, DownloadType)
 			newline = objRegEx.Replace(newline,vbCrLf)
 			objRegEx.Pattern = "</th>"
 			newline = objRegEx.Replace(newline,": ")
-			objRegEx.Pattern = "<[^>]+>|^ +|^.*æ€»ç›®å½•.*$|^.*æ€»åˆ†ç±».*$"
+			objRegEx.Pattern = "<[^>]+>|^ +|^.*×ÜÄ¿Â¼.*$|^.*×Ü·ÖÀà.*$"
 			newline = objRegEx.Replace(newline,"")
 			If Len(newline) > 0 Then
 				objONE.WriteText newline,1
@@ -212,7 +227,7 @@ Function DownloadURL(url, i, DownloadType)
 		FullFileName= ""
 	End If
 	DownloadURL = FullFileName
-	WScript.echo "å¤„ç†å®Œæˆ " & StoryTitle
+	WScript.echo "´¦ÀíÍê³É " & StoryTitle
 End Function
 
 Sub EmergeAll(DownloadType)

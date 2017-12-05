@@ -1,17 +1,17 @@
-'è¿™ä»½è„šæœ¬ï¼š
-'1 ä¸‹è½½ç‡ƒæ–‡ http://www.ranwena.com/files/article/0/996/
-'2 æ ¹æ®ç›®å½•ä¸‹è½½æ‰€æœ‰å°è¯´ç« èŠ‚
-'3 å»é™¤ä¸å¿…è¦çš„htmlæ ‡è®°å¹¶è½¬ç æˆgb2312
-'4 åˆå¹¶æˆä¸€ä»½æ–‡æœ¬æ–‡ä»¶
-'è¯·ä½¿ç”¨cscript.exeæ‰§è¡Œ
-'ä½¿ç”¨WScript.exeæ‰§è¡Œè„šæœ¬ä½ ä¼šä¸åœç‚¹å‡»ç¡®å®šæŒ‰é’®ç›´åˆ°ç´¯æ­»
-'å‹¿è°“è¨€ä¹‹ä¸é¢„
+'Õâ·İ½Å±¾£º
+'1 ÏÂÔØÈ¼ÎÄ http://www.ranwena.com/files/article/0/996/
+'2 ¸ù¾İÄ¿Â¼ÏÂÔØËùÓĞĞ¡ËµÕÂ½Ú
+'3 È¥³ı²»±ØÒªµÄhtml±ê¼Ç²¢×ªÂë³Égb2312
+'4 ºÏ²¢³ÉÒ»·İÎÄ±¾ÎÄ¼ş
+'ÇëÊ¹ÓÃcscript.exeÖ´ĞĞ
+'Ê¹ÓÃWScript.exeÖ´ĞĞ½Å±¾Äã»á²»Í£µã»÷È·¶¨°´Å¥Ö±µ½ÀÛËÀ
+'ÎğÎ½ÑÔÖ®²»Ô¤
 
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 
 BaseFolder = "D:\Temp\lgqm_Novel\"
 TempFolder = BaseFolder & "txt\"
-'è¿™ä¸ªæ–‡ä»¶å¤¹å¯ä»¥éšæ„æ›´æ”¹
+'Õâ¸öÎÄ¼ş¼Ğ¿ÉÒÔËæÒâ¸ü¸Ä
 If Not objFSO.FolderExists(TempFolder) Then 
 	CreateMultiLevelFolder TempFolder
 End If
@@ -34,11 +34,11 @@ URLPattern = "<dd><a href="&chr(34)&"(.*?)"&chr(34)&">(.*?)<\/a><\/dd>$"
 Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
 Const URLHead = "http://www.ranwena.com/files/article/0/996/"
-Const MsgHead = "ä¸‹è½½ç›®å½•å¹¶ä¾ç…§ç›®å½•ä¸‹è½½ç½‘é¡µå†…å®¹ï¼Œç”Ÿæˆ "
-Const MsgDone = " ä¸‹è½½å¹¶ç”Ÿæˆå®Œæˆã€‚è€—æ—¶ "
-Const MsgFailed = " ä¸‹è½½å¤±è´¥ã€‚"
-Const MsgCopy = " å·²ç»å¤åˆ¶åˆ°å›¾ä¹¦åº“ã€‚"
-Const MsgNoUpdate = " æ²¡æœ‰æ›´æ–°ï¼Œä¸åšåˆå¹¶ï¼Œä¸åšå¤åˆ¶ã€‚"
+Const MsgHead = "ÏÂÔØÄ¿Â¼²¢ÒÀÕÕÄ¿Â¼ÏÂÔØÍøÒ³ÄÚÈİ£¬Éú³É "
+Const MsgDone = " ÏÂÔØ²¢Éú³ÉÍê³É¡£ºÄÊ± "
+Const MsgFailed = " ÏÂÔØÊ§°Ü¡£"
+Const MsgCopy = " ÒÑ¾­¸´ÖÆµ½Í¼Êé¿â¡£"
+Const MsgNoUpdate = " Ã»ÓĞ¸üĞÂ£¬²»×öºÏ²¢£¬²»×ö¸´ÖÆ¡£"
 Const ServerAddress = "\\192.168.3.5\NewAdded\"
 
 Const EndKey = "footer"
@@ -46,7 +46,7 @@ Const EndKey = "footer"
 '===
 startTime = Now()
 
-lgqm_File_Name = "ä¸´é«˜å¯æ˜å°è¯´å®Œæ•´ç‰ˆ.txt"
+lgqm_File_Name = "ÁÙ¸ßÆôÃ÷Ğ¡ËµÍêÕû°æ.txt"
 WScript.echo MsgHead & lgqm_File_Name
 
 DownloadAll
@@ -57,7 +57,7 @@ EndTime = Now()
 UsedTime = DateDiff("s",StartTime,EndTime)
 
 If HaveNewFile Then
-	WScript.echo lgqm_File_Name & MsgDone & UsedTime & " ç§’ã€‚"
+	WScript.echo lgqm_File_Name & MsgDone & UsedTime & " Ãë¡£"
 	objFSO.CopyFile BaseFolder & lgqm_File_Name , ServerAddress ,True
 	WScript.echo vbCrLf & lgqm_File_Name & MsgCopy & vbCrLf
 	objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
@@ -72,11 +72,18 @@ Set objFS = Nothing
 Set objRegEx = Nothing
 
 Sub DownloadAll()
-
+	On Error Resume Next
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
 	http.send
+	If Err.Number > 0 Then
+		WScript.Echo Err.Number & " Src: " & Err.Source & " Desc: " & Err.Description
+		Err.Clear
+		Exit Sub
+	End If
+	On Error goto 0
+	
 	strIndex = http.responseText
 	
 	aIndex = Split(strIndex, vbCrlf )
@@ -88,7 +95,7 @@ Sub DownloadAll()
 	i = 1
 '	For Each strLine in aIndex
 	For x = 80 to UBound(aIndex)
-	'ä»ç¬¬80è¡Œåä¸è¿œæ‰å¼€å§‹æ­£æ–‡éƒ¨åˆ†ã€‚
+	'´ÓµÚ80ĞĞºó²»Ô¶²Å¿ªÊ¼ÕıÎÄ²¿·Ö¡£
 		strLine = aIndex(x)
 		If instr(strLine, EndKey) > 0 Then Exit For
 
@@ -100,10 +107,10 @@ Sub DownloadAll()
 			If Not(objFSO.FileExists(TempFolder & Right("000" & i,4) & ".TXT")) Then 
 				DownloadURL url2, i
 				HaveNewFile = True
-				WScript.echo StoryTitle & " å¤„ç†å®Œæˆ"
+				WScript.echo StoryTitle & " ´¦ÀíÍê³É"
 				WScript.Sleep 2000
 			Else
-				WScript.echo StoryTitle & " å·²ç»å­˜åœ¨ï¼Œè·³è¿‡ä¸‹è½½"
+				WScript.echo StoryTitle & " ÒÑ¾­´æÔÚ£¬Ìø¹ıÏÂÔØ"
 			End If
 			i = i + 1
 		End If
@@ -117,12 +124,20 @@ Sub DownloadURL(url, i)
 	objONE.LineSeparator = -1      'CRLF
 
 	objONE.Open
-	'on error resume next
+	On Error Resume Next
 	http.open "GET", url, False
 	http.setRequestHeader "Accept-Encoding", "gzip"
 	http.setRequestHeader "User-Agent", UserAgent
 	http.setRequestHeader "referer", url
 	http.send
+	If Err.Number > 0 Then
+		WScript.Echo Err.Number & " Src: " & Err.Source & " Desc: " & Err.Description
+		Err.Clear
+		objONE.Close
+		Exit Sub
+	End If
+	On Error goto 0
+	
 	strContent = http.responseText
 	aContent = Split(strContent, chr(9))
 	'WScript.Echo UBound(aContent)
@@ -133,7 +148,7 @@ Sub DownloadURL(url, i)
 	End If
 	'For Each ContentLine in aContent
 	For y = 50 to UBound(aContent)
-	'ä»ç¬¬50è¡Œåä¸è¿œæ‰å¼€å§‹æ­£æ–‡éƒ¨åˆ†ã€‚
+	'´ÓµÚ50ĞĞºó²»Ô¶²Å¿ªÊ¼ÕıÎÄ²¿·Ö¡£
 		ContentLine = aContent(y)
 		If instr(ContentLine, EndKey) > 0 Then Exit For
 
@@ -141,7 +156,7 @@ Sub DownloadURL(url, i)
 		Set myMatches = objRegEx.Execute(ContentLine)
 		If myMatches.count > 0 Then
 			title = myMatches(0).Submatches(0)
-			StoryTitle = "ç¬¬" & Right("000" & i,4) & "ç« " & " - " & title
+			StoryTitle = "µÚ" & Right("000" & i,4) & "ÕÂ" & " - " & title
 			objONE.WriteText StoryTitle
 			objONE.WriteText vbCrLf
 		End If
