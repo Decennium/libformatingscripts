@@ -1,6 +1,6 @@
 Set objFSO = CreateObject("Scripting.FileSystemObject")
 
-currentFolder = "D:\Temp\WTJ_Blog\"
+BaseFolder = "D:\Temp\WTJ_Blog\"
 
 TempFolder = BaseFolder & "txt\"
 '这个文件夹可以随意更改
@@ -22,7 +22,7 @@ Set http = CreateObject("Msxml2.XMLHttp.6.0")
 'Set http = CreateObject("Msxml2.ServerXMLHttp.6.0")
 
 Set objShell = CreateObject("WScript.Shell")
-objShell.CurrentDirectory = currentFolder
+objShell.CurrentDirectory = BaseFolder
 
 Set objRegEx = CreateObject("VBScript.RegExp")
 objRegEx.Global = True
@@ -43,7 +43,7 @@ StartDownload
 If HaveNewFile Then EmergeAll
 
 '===
-objShell.Run "explorer.exe /e, " & currentFolder , 3 ,False
+objShell.Run "explorer.exe /e, " & BaseFolder , 3 ,False
 
 Set objall = Nothing
 Set http = Nothing
@@ -55,19 +55,12 @@ Sub StartDownload()
 	nextpage = baseURL
 	Do
 		filename = Right("0000" & Mid(nextpage, InStrRev(nextpage, "=" )+1),6)&".txt"
-		If Not(objFSO.FileExists(TempFolder & filename)) Then 
-			nextpage = DownloadURL(nextpage)
-			If Len(nextpage) < 1 Then Exit Do
-		End If
+		nextpage = DownloadURL(nextpage)
+		If Len(nextpage) < 1 Then Exit Do
 	Loop
 End Sub
 
 Function DownloadURL(url)
-	DownloadURL = ""
-	
-	filename = Right("0000" & Mid(url, InStrRev(url, "=" )+1),6)&".txt"
-	objall.Open
-
 	on error resume next
 	http.open "GET", url, False
 	http.setRequestHeader "User-Agent", UserAgent
@@ -79,7 +72,6 @@ Function DownloadURL(url)
 	If Err.Number > 0 Then
 		WScript.Echo Err.Number & " Src: " & Err.Source & " Desc: " & Err.Description
 		Err.Clear
-		objall.Close
 		Exit Function
 	End If
 	On Error goto 0
@@ -88,9 +80,14 @@ Function DownloadURL(url)
 	aContent = Split(strContent, vbCrLf )
 	If UBound(aContent)<10 Then
 		WScript.Echo url & " 下载失败。"
-		objall.Close
 		Exit Function
 	End If
+
+	DownloadURL = ""
+	filename = Right("0000" & Mid(url, InStrRev(url, "=" )+1),6)&".txt"
+
+If Not(objFSO.FileExists(TempFolder & filename)) Then
+	objall.Open
 	'For Each ContentLine in aContent
 	For y = 280 to UBound(aContent)
 	'从第280行后不远才开始正文部分。
@@ -107,7 +104,7 @@ Function DownloadURL(url)
 		Else
 			url_next = ""
 		End If
-		
+
 		objRegEx.Pattern = "<span"
 		Set myMatches = objRegEx.Execute(ContentLine)
 		If myMatches.count > 0 Then
@@ -137,6 +134,26 @@ Function DownloadURL(url)
 	objall.Close
 
 	WScript.echo "处理完成 " & filename 'StoryTitle
+Else
+	For y = 280 to UBound(aContent)
+	'从第280行后不远才开始正文部分。
+		ContentLine = aContent(y)
+		If instr(ContentLine, EndKey) > 0 Then Exit For
+
+		objRegEx.Pattern = NextPattern
+		Set myMatches = objRegEx.Execute(ContentLine)
+		If myMatches.count > 0 Then
+			url_next = URLHead & myMatches(0).Submatches(0)
+			DownloadURL = url_next
+			HaveNewFile = True
+			'WScript.echo url_next
+		Else
+			url_next = ""
+		End If
+	Next
+	WScript.Echo filename & " Exist, Skip It..."
+End If
+
 End Function
 
 Sub EmergeAll()
