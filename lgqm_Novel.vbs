@@ -17,7 +17,7 @@ If Not objFSO.FolderExists(TempFolder) Then
 End If
 HaveNewFile = False
 
-url = "http://www.ranwena.com/files/article/0/996/index.html"
+url = "https://www.ranwena.com/files/article/0/996/"
 
 'Set http = CreateObject("Msxml2.XMLHTTP")
 Set http = CreateObject("Msxml2.XMLHttp.6.0")
@@ -33,7 +33,7 @@ URLPattern = "<dd><a href="&chr(34)&"(.*?)"&chr(34)&">(.*?)<\/a><\/dd>$"
 
 Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
-Const URLHead = "http://www.ranwena.com/files/article/0/996/"
+Const URLHead = "https://www.ranwena.com/files/article/0/996/"
 Const MsgHead = "下载目录并依照目录下载网页内容，生成 "
 Const MsgDone = " 下载并生成完成。耗时 "
 Const MsgFailed = " 下载失败。"

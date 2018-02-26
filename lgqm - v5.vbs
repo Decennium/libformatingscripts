@@ -17,7 +17,7 @@ If Not objFSO.FolderExists(TempFolder) Then
 	CreateMultiLevelFolder TempFolder
 End If
 
-Const url = "http://lgqm.huiji.wiki/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E7%AE%80%E8%A6%81%E4%BF%A1%E6%81%AF%E4%B8%80%E8%A7%88"
+Const url = "https://lgqm.huijiwiki.com/wiki/%E5%90%8C%E4%BA%BA%E4%BD%9C%E5%93%81%E5%88%97%E8%A1%A8"
 
 Set http = CreateObject("Msxml2.XMLHttp.6.0")
 'Set http = CreateObject("Msxml2.ServerXMLHttp.6.0")
@@ -31,7 +31,7 @@ URLPattern = "^<td> *<a href="&chr(34)&"(.*?)"&chr(34)&" title="&chr(34)&"(.*?)"
 
 Const UserAgent = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko"
 
-Const URLHead = "http://lgqm.huiji.wiki"
+Const URLHead = "https://lgqm.huijiwiki.com"
 Const MsgStart = "开始下载目录并依照目录下载网页内容，生成 "
 Const MsgEnd = " 下载并生成完成。耗时 "
 Const MsgFailed = " 下载失败。"
