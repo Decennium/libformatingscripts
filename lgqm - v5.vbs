@@ -145,7 +145,7 @@ Sub DownloadAll(DownloadType)
 					objFSO.CopyFile DownloadedFile, BestFile
 					HaveUpdate(dtBest) = True
 				End If
-				If (aIndex(x+12) = "<td>完结" OR aIndex(x+14) <> "<td>待转正") Then
+				If (aIndex(x+12) = "<td>完结" OR aIndex(x+14) = "<td>已转正" OR aIndex(x+14) = "<td>部分转正") Then
 					objFSO.CopyFile DownloadedFile, ClosedFile
 					HaveUpdate(dtClosed) = True
 				End If
@@ -236,7 +236,9 @@ Sub EmergeAll(DownloadType)
 	File_Head = FileHead(DownloadType)
 
 	Const ForReading = 1
-	Set objOutputFile = objFSO.CreateTextFile(BaseFolder & lgqm_File_Name)
+	Const ForWriting = 2
+
+	Set objOutputFile = objFSO.CreateTextFile(BaseFolder & lgqm_File_Name, True)
 
 	Set objFolder = objFSO.GetFolder(TempFolder)
 	'Wscript.Echo objFolder.Path
